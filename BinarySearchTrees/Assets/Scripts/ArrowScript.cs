@@ -7,6 +7,19 @@ public class ArrowScript : MonoBehaviour {
 	private Transform fromNode, toNode;
 	private List<Vector2> linePoints = new List<Vector2>();
 
+	public Transform ToNode
+	{
+		get
+		{
+			return toNode;
+		}
+
+		set
+		{
+			toNode = value;
+		}
+	}
+
 	// Use this for initialization
 	void Start () {
 		fromNode = gameObject.transform.parent;

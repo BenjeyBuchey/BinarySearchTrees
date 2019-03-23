@@ -61,6 +61,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\NodeScript.cs" />
     <Compile Include="Assets\Scripts\ArrowScript.cs" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>C:/Users/Benjey/Documents/GitHub/BinarySearchTrees/BinarySearchTrees/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
