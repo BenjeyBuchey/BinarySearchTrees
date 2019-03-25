@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class NodeScript : MonoBehaviour {
 
-	private int level = 0, number = 0;
+	private int level = 0, key = 0;
 	private GameObject parentNode = null, leftNode = null, rightNode = null;
-	// TODO: static class for node x,y position differences
 	// treescript. spawn nodes there.
 
 	public int Level
@@ -22,16 +22,16 @@ public class NodeScript : MonoBehaviour {
 		}
 	}
 
-	public int Number
+	public int Key
 	{
 		get
 		{
-			return number;
+			return key;
 		}
 
 		set
 		{
-			number = value;
+			key = value;
 		}
 	}
 
@@ -48,18 +48,44 @@ public class NodeScript : MonoBehaviour {
 		}
 	}
 
+	public GameObject LeftNode
+	{
+		get
+		{
+			return leftNode;
+		}
+
+		set
+		{
+			leftNode = value;
+		}
+	}
+
+	public GameObject RightNode
+	{
+		get
+		{
+			return rightNode;
+		}
+
+		set
+		{
+			rightNode = value;
+		}
+	}
+
 
 	// Use this for initialization
 	void Start () {
-		if (gameObject.transform.parent.gameObject.tag == "Node")
-		{
-			// set parent node
-			parentNode = gameObject.transform.parent.gameObject;
+		//if (gameObject.transform.parent.gameObject.tag == "Node")
+		//{
+		//	// set parent node
+		//	parentNode = gameObject.transform.parent.gameObject;
 
-			// set level
-			NodeScript ns = parentNode.GetComponent<NodeScript>();
-			level = ns.Level + 1;
-		}
+		//	// set level
+		//	NodeScript ns = parentNode.GetComponent<NodeScript>();
+		//	level = ns.Level + 1;
+		//}
 	}
 	
 	// Update is called once per frame
@@ -67,30 +93,32 @@ public class NodeScript : MonoBehaviour {
 		
 	}
 
-	void SetChildNodeLeft(GameObject node)
+	public void SetChildNodeLeft(GameObject node, int key)
 	{
 		leftNode = node;
-		foreach (GameObject arrow in gameObject.GetComponentsInChildren<GameObject>())
-		{
-			if (arrow.name == "ArrowLeft")
-			{
-				SetChildNode(node, arrow);
-				break;
-			}
-		}
+		leftNode.GetComponent<NodeScript>().ParentNode = gameObject;
+		leftNode.GetComponent<NodeScript>().Level = level + 1;
+
+		leftNode.GetComponent<NodeScript>().SetKey(key);
+		leftNode.GetComponent<NodeScript>().SetPosition();
+
+		GameObject arrow = gameObject.transform.Find("ArrowLeft").gameObject;
+		if (arrow == null) return;
+		SetChildNode(node, arrow);
 	}
 
-	void SetChildNodeRight(GameObject node)
+	public void SetChildNodeRight(GameObject node, int key)
 	{
 		rightNode = node;
-		foreach (GameObject arrow in gameObject.GetComponentsInChildren<GameObject>())
-		{
-			if (arrow.name == "ArrowRight")
-			{
-				SetChildNode(node, arrow);
-				break;
-			}
-		}
+		rightNode.GetComponent<NodeScript>().ParentNode = gameObject;
+		rightNode.GetComponent<NodeScript>().Level = level + 1;
+
+		rightNode.GetComponent<NodeScript>().SetKey(key);
+		rightNode.GetComponent<NodeScript>().SetPosition();
+
+		GameObject arrow = gameObject.transform.Find("ArrowRight").gameObject;
+		if (arrow == null) return;
+		SetChildNode(node, arrow);
 	}
 
 	void SetChildNode(GameObject node, GameObject arrow)
@@ -100,5 +128,37 @@ public class NodeScript : MonoBehaviour {
 		if (arrowScript == null) return;
 
 		arrowScript.ToNode = node.transform;
+	}
+
+	public void SetPosition()
+	{
+		if(level == 0)
+		{
+			gameObject.transform.localPosition = NodeManager.ROOT_POSITION;
+			return;
+		}
+
+		bool isLeftNode = (parentNode.GetComponent<NodeScript>().leftNode == gameObject) ? true : false;
+
+		float x = (isLeftNode) ? parentNode.transform.localPosition.x - NodeManager.X_DIFF / level : parentNode.transform.localPosition.x + NodeManager.X_DIFF / level;
+		Vector3 position = new Vector3(x, parentNode.transform.localPosition.y - NodeManager.Y_DIFF, 0.0f);
+		gameObject.transform.localPosition = position;
+	}
+
+	public void SetKey(int val)
+	{
+		key = val;
+		SetKeyText();
+	}
+
+	void SetKeyText()
+	{
+		foreach(Text t in gameObject.GetComponentsInChildren<Text>())
+		{
+			if(t.name == "NodeNumber")
+			{
+				t.text = key.ToString();
+			}
+		}
 	}
 }
