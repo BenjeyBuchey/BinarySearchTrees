@@ -61,10 +61,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\NodeScript.cs" />
     <Compile Include="Assets\Scripts\ArrowScript.cs" />
     <Compile Include="Assets\Scripts\NodeManager.cs" />
-    <Compile Include="Assets\TreeScript.cs" />
+    <Compile Include="Assets\Scripts\NodeScript.cs" />
+    <Compile Include="Assets\Scripts\TreeScript.cs" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>C:/Users/User/Documents/GitHub/BinarySearchTrees/BinarySearchTrees/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>
