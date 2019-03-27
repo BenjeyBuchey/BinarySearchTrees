@@ -77,15 +77,7 @@ public class NodeScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		//if (gameObject.transform.parent.gameObject.tag == "Node")
-		//{
-		//	// set parent node
-		//	parentNode = gameObject.transform.parent.gameObject;
 
-		//	// set level
-		//	NodeScript ns = parentNode.GetComponent<NodeScript>();
-		//	level = ns.Level + 1;
-		//}
 	}
 	
 	// Update is called once per frame

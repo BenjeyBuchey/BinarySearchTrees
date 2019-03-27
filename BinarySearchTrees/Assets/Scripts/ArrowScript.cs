@@ -45,4 +45,24 @@ public class ArrowScript : MonoBehaviour {
 		lr.SetPosition(0, fromNode.position);
 		lr.SetPosition(1, toNode.position);
 	}
+
+	public void SetDefaultColor()
+	{
+		LineRenderer lr = GetComponent<LineRenderer>();
+		lr.startColor = Color.black;
+		lr.endColor = Color.black;
+	}
+
+	public void SetVisualizationColor()
+	{
+		LineRenderer lr = GetComponent<LineRenderer>();
+		lr.startColor = Color.red;
+		lr.endColor = Color.red;
+	}
+
+	public void Reset()
+	{
+		LineRenderer lr = GetComponent<LineRenderer>();
+		lr.positionCount = 0;
+	}
 }
