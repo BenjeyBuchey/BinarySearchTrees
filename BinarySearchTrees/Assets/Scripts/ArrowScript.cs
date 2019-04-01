@@ -5,7 +5,7 @@ using UnityEngine;
 public class ArrowScript : MonoBehaviour {
 
 	private Transform fromNode, toNode;
-	private List<Vector2> linePoints = new List<Vector2>();
+	private static Color DEFAULT_COLOR = Color.black, VISUALIZATION_COLOR = Color.red;
 
 	public Transform ToNode
 	{
@@ -28,16 +28,18 @@ public class ArrowScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		//transform.position = fromNode.position;
-		//transform.LookAt(toNode);
-		//float mag = (fromNode.position - toNode.position).magnitude;
-		//transform.localScale = new Vector3(mag, mag, 0);
 		UpdateLineRenderer();
 	}
 
 	void UpdateLineRenderer()
 	{
-		if (fromNode == null || toNode == null) return;
+		if (fromNode == null) return;
+
+		if(toNode == null)
+		{
+			Reset();
+			return;
+		}
 
 		LineRenderer lr = GetComponent<LineRenderer>();
 		//lr.useWorldSpace = true;
@@ -49,20 +51,22 @@ public class ArrowScript : MonoBehaviour {
 	public void SetDefaultColor()
 	{
 		LineRenderer lr = GetComponent<LineRenderer>();
-		lr.startColor = Color.black;
-		lr.endColor = Color.black;
+		lr.startColor = DEFAULT_COLOR;
+		lr.endColor = DEFAULT_COLOR;
 	}
 
 	public void SetVisualizationColor()
 	{
 		LineRenderer lr = GetComponent<LineRenderer>();
-		lr.startColor = Color.red;
-		lr.endColor = Color.red;
+		lr.startColor = VISUALIZATION_COLOR;
+		lr.endColor = VISUALIZATION_COLOR;
 	}
 
 	public void Reset()
 	{
 		LineRenderer lr = GetComponent<LineRenderer>();
+		if (lr == null) return;
+
 		lr.positionCount = 0;
 	}
 }

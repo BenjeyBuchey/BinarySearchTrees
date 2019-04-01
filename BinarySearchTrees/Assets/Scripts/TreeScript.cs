@@ -70,8 +70,12 @@ public class TreeScript : MonoBehaviour {
 		GameObject go = Search(root, key);
 		if (go != null)
 		{
-			//go = null;
+			// if node is leaf
 			Destroy(go);
+
+			// if node has only one child
+
+			// if node has two children
 		}
 			
 	}
