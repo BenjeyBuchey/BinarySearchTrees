@@ -82,7 +82,8 @@ public class NodeScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+		SetPosition();
+		SetArrows();
 	}
 
 	public void SetChildNodeLeft(GameObject node, int childKey)
@@ -90,9 +91,9 @@ public class NodeScript : MonoBehaviour {
 		leftNode = node;
 		InitChildNode(leftNode, childKey);
 
-		GameObject arrow = gameObject.transform.Find("ArrowLeft").gameObject;
-		if (arrow == null) return;
-		SetArrow(node, arrow);
+		//GameObject arrow = gameObject.transform.Find("ArrowLeft").gameObject;
+		//if (arrow == null) return;
+		//SetArrow(node, arrow);
 	}
 
 	public void SetChildNodeRight(GameObject node, int childKey)
@@ -100,9 +101,9 @@ public class NodeScript : MonoBehaviour {
 		rightNode = node;
 		InitChildNode(rightNode, childKey);
 
-		GameObject arrow = gameObject.transform.Find("ArrowRight").gameObject;
-		if (arrow == null) return;
-		SetArrow(node, arrow);
+		//GameObject arrow = gameObject.transform.Find("ArrowRight").gameObject;
+		//if (arrow == null) return;
+		//SetArrow(node, arrow);
 	}
 
 	private void InitChildNode(GameObject childNode, int childKey)
@@ -115,7 +116,7 @@ public class NodeScript : MonoBehaviour {
 		childNode.GetComponent<NodeScript>().ParentNode = gameObject;
 		childNode.GetComponent<NodeScript>().SetKey(childKey);
 		childNode.GetComponent<NodeScript>().Level = level + 1;
-		childNode.GetComponent<NodeScript>().SetPosition();
+		//childNode.GetComponent<NodeScript>().SetPosition();
 	}
 
 	void SetArrow(GameObject node, GameObject arrow)
@@ -125,6 +126,23 @@ public class NodeScript : MonoBehaviour {
 		if (arrowScript == null) return;
 
 		arrowScript.ToNode = node.transform;
+	}
+
+	void SetArrows()
+	{
+		if(leftNode != null)
+		{
+			GameObject arrow = gameObject.transform.Find("ArrowLeft").gameObject;
+			if (arrow == null) return;
+			SetArrow(leftNode, arrow);
+		}
+
+		if(rightNode != null)
+		{
+			GameObject arrow = gameObject.transform.Find("ArrowRight").gameObject;
+			if (arrow == null) return;
+			SetArrow(rightNode, arrow);
+		}
 	}
 
 	public void SetPosition()
@@ -157,5 +175,42 @@ public class NodeScript : MonoBehaviour {
 				t.text = key.ToString();
 			}
 		}
+	}
+
+	public int GetNumChildren()
+	{
+		int numChildren = 0;
+		if (leftNode != null) numChildren++;
+		if (rightNode != null) numChildren++;
+
+		return numChildren;
+	}
+
+	public List<GameObject> GetChildren()
+	{
+		List<GameObject> list = new List<GameObject>();
+		if (leftNode != null) list.Add(leftNode);
+		if (rightNode != null) list.Add(rightNode);
+
+		return list;
+	}
+
+	// gets called when one node gets deleted and new parent&children need to be set
+	public void RefreshNode(GameObject newParentNode)
+	{
+		// TODO: change level!!!
+
+		// if newParent is null then this node becomes the new root node
+		if(newParentNode == null)
+		{
+			return;
+		}
+
+		parentNode = newParentNode;
+		// becomes right node
+		if (key > parentNode.GetComponent<NodeScript>().Key)
+			parentNode.GetComponent<NodeScript>().rightNode = gameObject;
+		else
+			parentNode.GetComponent<NodeScript>().leftNode = gameObject;
 	}
 }
