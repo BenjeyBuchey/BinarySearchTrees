@@ -198,19 +198,34 @@ public class NodeScript : MonoBehaviour {
 	// gets called when one node gets deleted and new parent&children need to be set
 	public void RefreshNode(GameObject newParentNode)
 	{
-		// TODO: change level!!!
-
 		// if newParent is null then this node becomes the new root node
-		if(newParentNode == null)
-		{
-			return;
-		}
+		Debug.Log("KEY: " +key + " - CURRENT LEVEL: " + level);
 
 		parentNode = newParentNode;
+		RefreshLevels();
+		Debug.Log("KEY: " + key + " - NEW LEVEL: " + level);
+		if (parentNode == null) return;
+
 		// becomes right node
 		if (key > parentNode.GetComponent<NodeScript>().Key)
 			parentNode.GetComponent<NodeScript>().rightNode = gameObject;
 		else
 			parentNode.GetComponent<NodeScript>().leftNode = gameObject;
 	}
+
+	public void RefreshLevels()
+	{
+		if (parentNode == null)
+			level = 0;
+		else
+			level = parentNode.GetComponent<NodeScript>().Level + 1;
+
+		if (leftNode != null)
+			leftNode.GetComponent<NodeScript>().RefreshLevels();
+		if(rightNode != null)
+			rightNode.GetComponent<NodeScript>().RefreshLevels();
+		//Debug.Log("KEY: " + key + " - PARENT KEY: " + parentNode.GetComponent<NodeScript>().Key);
+		
+	}
+
 }

@@ -10,14 +10,13 @@ public class TreeScript : MonoBehaviour {
 	private GameObject root = null;
 	// Use this for initialization
 	void Start () {
-		AddNode(40);
-		AddNode(33);
-		AddNode(44);
-		AddNode(55);
-		AddNode(32);
-		AddNode(16);
 		AddNode(50);
-		AddNode(35);
+		AddNode(30);
+		AddNode(20);
+		AddNode(40);
+		AddNode(70);
+		AddNode(60);
+		AddNode(80);
 		Inorder(root);
 	}
 	
@@ -78,16 +77,12 @@ public class TreeScript : MonoBehaviour {
 		// key to be deleted smaller than root key --> it's in the left subtree
 		if (key < node.GetComponent<NodeScript>().Key)
 		{
-			node.GetComponent<NodeScript>().LeftNode = Delete(node.GetComponent<NodeScript>().LeftNode, key); // use SetChildNode here
-			//node.GetComponent<NodeScript>().SetChildNodeLeft(Delete(node.GetComponent<NodeScript>().LeftNode, key), key);
+			node.GetComponent<NodeScript>().LeftNode = Delete(node.GetComponent<NodeScript>().LeftNode, key);
 		}
 		// key greater --> right subtree
 		else if (key > node.GetComponent<NodeScript>().Key)
 		{
 			node.GetComponent<NodeScript>().RightNode = Delete(node.GetComponent<NodeScript>().RightNode, key);
-			//GameObject rightNode = Delete(node.GetComponent<NodeScript>().RightNode, key);
-			//node.GetComponent<NodeScript>().SetChildNodeRight(rightNode, key);
-			//rightNode.GetComponent<NodeScript>().SetPosition();
 		}
 		// key equal --> this node gets deleted
 		else
@@ -96,53 +91,30 @@ public class TreeScript : MonoBehaviour {
 			if (node.GetComponent<NodeScript>().LeftNode == null)
 			{
 				GameObject temp = node.GetComponent<NodeScript>().RightNode;
-				temp.GetComponent<NodeScript>().RefreshNode(node.GetComponent<NodeScript>().ParentNode);
+				if (temp != null)
+					temp.GetComponent<NodeScript>().RefreshNode(node.GetComponent<NodeScript>().ParentNode);
+
 				Destroy(node);
 				return temp;
 			}
 			else if (node.GetComponent<NodeScript>().RightNode == null)
 			{
 				GameObject temp = node.GetComponent<NodeScript>().LeftNode;
-				temp.GetComponent<NodeScript>().RefreshNode(node.GetComponent<NodeScript>().ParentNode);
+				if (temp != null)
+					temp.GetComponent<NodeScript>().RefreshNode(node.GetComponent<NodeScript>().ParentNode);
+
 				Destroy(node);
 				return temp;
 			}
+
+			// node has two children --> find inorder successor, set node to inorder successor value, delete inorder successor
+			GameObject inorderSuccessor = InorderSuccessor(node.GetComponent<NodeScript>().RightNode);
+			if(inorderSuccessor != null)
+			{
+				node.GetComponent<NodeScript>().SetKey(inorderSuccessor.GetComponent<NodeScript>().Key);
+				node.GetComponent<NodeScript>().RightNode = Delete(node.GetComponent<NodeScript>().RightNode, inorderSuccessor.GetComponent<NodeScript>().Key);
+			}
 		}
-		return node;
-	}
-
-	private GameObject DeleteOld(GameObject node)
-	{
-		if (node == null) return node;
-
-		NodeScript ns = node.GetComponent<NodeScript>();
-		if (ns == null) return node;
-
-		List<GameObject> children = ns.GetChildren();
-		if (children == null) return node;
-
-		// if node is leaf --> remove from tree
-		if (children.Count == 0)
-			Destroy(node);
-		// if node has only one child --> set node to child value and delete child
-		else if (children.Count == 1)
-		{
-			if (children[0] == null) return null;
-
-			ns.SetKey(children[0].GetComponent<NodeScript>().Key);
-			Destroy(children[0]);
-			return children[0];
-		}
-		// if node has two children --> find inorder successor, set node to inorder successor value, delete inorder successor
-		else if (children.Count == 2)
-		{
-			GameObject inorderSuccessor = InorderSuccessor(ns.RightNode);
-			if (inorderSuccessor == null) return null;
-
-			ns.SetKey(inorderSuccessor.GetComponent<NodeScript>().Key);
-			DeleteOld(inorderSuccessor);
-		}
-
 		return node;
 	}
 
