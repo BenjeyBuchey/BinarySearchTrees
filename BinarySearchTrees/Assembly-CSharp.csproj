@@ -62,9 +62,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\ArrowScript.cs" />
+    <Compile Include="Assets\Scripts\BSTVisual.cs" />
+    <Compile Include="Assets\Scripts\BSTVisualItem.cs" />
+    <Compile Include="Assets\Scripts\Extensions.cs" />
     <Compile Include="Assets\Scripts\NodeManager.cs" />
     <Compile Include="Assets\Scripts\NodeScript.cs" />
     <Compile Include="Assets\Scripts\TreeScript.cs" />
+    <Compile Include="Assets\Scripts\VisualScript.cs" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>C:/Users/Benjey/Documents/GitHub/BinarySearchTrees/BinarySearchTrees/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>

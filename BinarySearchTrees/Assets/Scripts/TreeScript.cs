@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,8 +9,26 @@ public class TreeScript : MonoBehaviour {
 	public InputField inputFieldAddNode, inputFieldSearchNode, inputFieldDeleteNode;
 	public GameObject nodePrefab;
 	private GameObject root = null;
+	private BSTVisual bstVisual = new BSTVisual();
+	private bool isInitializing = false;
+	private bool isRunning = false;
+
+	public bool IsRunning
+	{
+		get
+		{
+			return isRunning;
+		}
+
+		set
+		{
+			isRunning = value;
+		}
+	}
+
 	// Use this for initialization
 	void Start () {
+		isInitializing = true;
 		AddNode(50);
 		AddNode(30);
 		AddNode(20);
@@ -18,11 +37,28 @@ public class TreeScript : MonoBehaviour {
 		AddNode(60);
 		AddNode(80);
 		Inorder(root);
+		isInitializing = false;
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		
+	}
+
+	public void SetRoot(GameObject node)
+	{
+		root = node;
+	}
+
+	public void PrintNodes()
+	{
+		Inorder(root);
+	}
+
+	private void StartVisualization()
+	{
+		// get visual script & start
+		gameObject.GetComponent<VisualScript>().Visualize(bstVisual);
 	}
 
 	public void Inorder(GameObject node)
@@ -42,22 +78,31 @@ public class TreeScript : MonoBehaviour {
 
 	public void ButtonAddNode()
 	{
-		Debug.Log("ADDING: " +inputFieldAddNode.text);
 		int key = -1;
-		if (!int.TryParse(inputFieldAddNode.text, out key)) return;
+		if (!int.TryParse(inputFieldAddNode.text, out key) || isRunning) return;
+
+		isRunning = true;
+		bstVisual.ClearItems();
+		bstVisual.Key = key;
 		GameObject go = AddNode(key);
+
+		StartVisualization();
 	}
 
 	public void ButtonSearchNode()
 	{
-		Debug.Log("SEARCHING: " + inputFieldSearchNode.text);
 		int key = -1;
 		if (!int.TryParse(inputFieldSearchNode.text, out key)) return;
+
+		isRunning = true;
+		bstVisual.ClearItems();
+		bstVisual.Key = key;
 		GameObject go = Search(root, key);
 		if (go != null)
 			Debug.Log("KEY FOUND!");
 		else
 			Debug.Log("KEY NOT FOUND!");
+		StartVisualization();
 	}
 
 	public void ButtonDeleteNode()
@@ -67,6 +112,8 @@ public class TreeScript : MonoBehaviour {
 		if (!int.TryParse(inputFieldDeleteNode.text, out key)) return;
 
 		//GameObject go = Search(root, key);
+		bstVisual.ClearItems();
+		bstVisual.Key = key;
 		Delete(root, key);
 	}
 
@@ -120,48 +167,70 @@ public class TreeScript : MonoBehaviour {
 
 	private GameObject Insert(GameObject node, bool isLeftNode, int key, GameObject parentNode)
 	{
-		if (node == null) return SpawnNode(node, isLeftNode, key, parentNode);
+		if (node == null) return SpawnNode(isLeftNode, key, parentNode);
+		bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.Node));
 
 		if (key < node.GetComponent<NodeScript>().Key)
+		{
+			bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.LeftArrow));
 			Insert(node.GetComponent<NodeScript>().LeftNode, true, key, node);
+		}
 		else if (key > node.GetComponent<NodeScript>().Key)
+		{
+			bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.RightArrow));
 			Insert(node.GetComponent<NodeScript>().RightNode, false, key, node);
+		}
 
 		return node;
 	}
 
-	private GameObject SpawnNode(GameObject node, bool isLeftNode, int key, GameObject parentNode)
+	private GameObject SpawnNode(bool isLeftNode, int key, GameObject parentNode)
 	{
 		// spawn new node
-		node = Instantiate(nodePrefab, gameObject.transform);
+		GameObject node = Instantiate(nodePrefab, gameObject.transform);
 
 		if (root == null)
 		{
 			root = node;
 			root.GetComponent<NodeScript>().SetKey(key);
-			//root.GetComponent<NodeScript>().SetPosition();
+			root.GetComponent<NodeScript>().Activate(true);
 			return root;
 		}
+
+		bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.SpawnNode));
 
 		if (isLeftNode)
 			parentNode.GetComponent<NodeScript>().SetChildNodeLeft(node, key);
 		else
 			parentNode.GetComponent<NodeScript>().SetChildNodeRight(node, key);
 
+		if (isInitializing)
+			node.GetComponent<NodeScript>().Activate(true);
+		else
+			node.GetComponent<NodeScript>().Activate(false);
+
 		return node;
 	}
 
 	private GameObject Search(GameObject node, int key)
 	{
+		bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.Node));
 		// root null or root has key
 		if (node == null || node.GetComponent<NodeScript>().Key == key)
+		{
+			bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.FoundNode));
 			return node;
+		}
 
 		// key > node key
 		if (node.GetComponent<NodeScript>().Key < key)
+		{
+			bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.RightArrow));
 			return Search(node.GetComponent<NodeScript>().RightNode, key);
+		}
 
 		// key <= node key
+		bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.LeftArrow));
 		return Search(node.GetComponent<NodeScript>().LeftNode, key);
 	}
 

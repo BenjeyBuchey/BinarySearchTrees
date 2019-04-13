@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,6 +8,9 @@ public class NodeScript : MonoBehaviour {
 
 	private int level = 0, key = 0;
 	private GameObject parentNode = null, leftNode = null, rightNode = null;
+	private static Color DEFAULT_COLOR = Color.black;
+	private static Color VISUALIZATION_COLOR = Color.red;
+	private bool isInitialized = false;
 	// treescript. spawn nodes there.
 
 	public int Level
@@ -74,16 +78,56 @@ public class NodeScript : MonoBehaviour {
 		}
 	}
 
+	public bool IsInitialized
+	{
+		get
+		{
+			return isInitialized;
+		}
+
+		set
+		{
+			isInitialized = value;
+		}
+	}
+
 
 	// Use this for initialization
 	void Start () {
+		//gameObject.SetActive(false);
 
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		SetPosition();
-		SetArrows();
+		if (isInitialized)
+		{
+			SetPosition();
+			SetArrows();
+			//gameObject.SetActive(isInitialized);
+		}
+	}
+
+	public void Activate(bool isActive)
+	{
+		gameObject.SetActive(isActive);
+		isInitialized = isActive;
+		if (parentNode != null)
+			parentNode.GetComponent<NodeScript>().ActivateArrows(isActive, gameObject);
+	}
+
+	public void ActivateArrows(bool isActive, GameObject childNode)
+	{
+		// need to set arrows to childNode active/inactive
+		string arrStr = string.Empty;
+		if (childNode == leftNode)
+			arrStr = "ArrowLeft";
+		else if (childNode == rightNode)
+			arrStr = "ArrowRight";
+
+		GameObject arrow = gameObject.transform.Find(arrStr).gameObject;
+		ArrowScript ascript = arrow.GetComponent<ArrowScript>();
+		ascript.IsInitialized = isActive;
 	}
 
 	public void SetChildNodeLeft(GameObject node, int childKey)
@@ -216,7 +260,7 @@ public class NodeScript : MonoBehaviour {
 	public void RefreshLevels()
 	{
 		if (parentNode == null)
-			level = 0;
+			SetRoot();
 		else
 			level = parentNode.GetComponent<NodeScript>().Level + 1;
 
@@ -228,4 +272,41 @@ public class NodeScript : MonoBehaviour {
 		
 	}
 
+	private void SetRoot()
+	{
+		level = 0;
+		TreeScript ts = gameObject.transform.parent.gameObject.GetComponent<TreeScript>();
+		if (ts == null) return;
+
+		ts.SetRoot(gameObject);
+	}
+
+	public void SetNodeColor(bool isDefault)
+	{
+		foreach (Text t in gameObject.GetComponentsInChildren<Text>())
+		{
+			if (t.name == "NodeNumber")
+			{
+				if (isDefault)
+					t.color = DEFAULT_COLOR;
+				else
+					t.color = VISUALIZATION_COLOR;
+			}
+		}
+	}
+
+	public void SetArrowColor(bool isDefault, bool isLeftArrow)
+	{
+		string arrowString = isLeftArrow ? "ArrowLeft" : "ArrowRight";
+		GameObject arrow = gameObject.transform.Find(arrowString).gameObject;
+		if (arrow == null) return;
+
+		ArrowScript script = arrow.GetComponent<ArrowScript>();
+		if (script == null) return;
+
+		if (isDefault)
+			script.SetDefaultColor();
+		else
+			script.SetVisualizationColor();
+	}
 }

@@ -6,6 +6,7 @@ public class ArrowScript : MonoBehaviour {
 
 	private Transform fromNode, toNode;
 	private static Color DEFAULT_COLOR = Color.black, VISUALIZATION_COLOR = Color.red;
+	private bool isInitialized = false;
 
 	public Transform ToNode
 	{
@@ -20,15 +21,29 @@ public class ArrowScript : MonoBehaviour {
 		}
 	}
 
+	public bool IsInitialized
+	{
+		get
+		{
+			return isInitialized;
+		}
+
+		set
+		{
+			isInitialized = value;
+		}
+	}
+
 	// Use this for initialization
 	void Start () {
 		fromNode = gameObject.transform.parent;
-		UpdateLineRenderer();
+		//UpdateLineRenderer();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		UpdateLineRenderer();
+		if(isInitialized)
+			UpdateLineRenderer();
 	}
 
 	void UpdateLineRenderer()
