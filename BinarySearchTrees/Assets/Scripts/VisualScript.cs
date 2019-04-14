@@ -9,6 +9,7 @@ public class VisualScript : MonoBehaviour {
 	private BSTVisual _bstVisual;
 	private float waitTime = 1.0f;
 	public GameObject logs, scrollView;
+	public Slider visualizationSpeedSlider;
 	// Use this for initialization
 	void Start () {
 
@@ -33,6 +34,7 @@ public class VisualScript : MonoBehaviour {
 		// add log msg, change color of node and arrow
 		foreach(BSTVisualItem item in _bstVisual.Items)
 		{
+			waitTime = visualizationSpeedSlider.value * -1;
 			logs.GetComponent<Text>().text += item.GetItemMessage() + System.Environment.NewLine;
 			scrollView.GetComponent<ScrollRect>().verticalNormalizedPosition = 0f;
 			HandleVisualizationItem(item, false);
@@ -48,12 +50,13 @@ public class VisualScript : MonoBehaviour {
 	{
 		// set isRunning to false
 		gameObject.GetComponent<TreeScript>().IsRunning = false;
+		gameObject.GetComponent<TreeScript>().Unlock();
 	}
 
 	void HandleVisualizationItem(BSTVisualItem item, bool isDefaultColor)
 	{
 		GameObject node = item.Node;
-		if (node == null) return;
+		//if (node == null) return;
 
 		switch(item.Type)
 		{
@@ -67,7 +70,16 @@ public class VisualScript : MonoBehaviour {
 				HandleArrow(node, isDefaultColor, false);
 				break;
 			case (int)VisualType.SpawnNode:
-				HandleSpawnNode(node, isDefaultColor);
+				HandleSpawnNode(isDefaultColor, item.IsLeftNode, item.EnteredKey, item.ParentNode);
+				break;
+			case (int)VisualType.DestroyNode:
+				HandleDestroyNode(node, isDefaultColor);
+				break;
+			case (int)VisualType.RefreshNode:
+				HandleRefreshNode(node, isDefaultColor, item.ParentNode);
+				break;
+			case (int)VisualType.SetNodeKey:
+				HandleSetNodeKey(node, isDefaultColor, item.EnteredKey);
 				break;
 		}
 	}
@@ -84,9 +96,49 @@ public class VisualScript : MonoBehaviour {
 		node.GetComponent<NodeScript>().SetArrowColor(isDefaultColor, isLeftArrow);
 	}
 
-	void HandleSpawnNode(GameObject node, bool isSpawned)
+	void HandleSpawnNode(bool isSpawned, bool isLeftNode, int key, GameObject parentNode)
 	{
-		if (node == null || isSpawned) return;
-		node.GetComponent<NodeScript>().Activate(true);
+		if (isSpawned) return;
+		gameObject.GetComponent<TreeScript>().SpawnNode(isLeftNode, key, parentNode);
+	}
+
+	void HandleDestroyNode(GameObject node, bool isDeleted)
+	{
+		if (isDeleted) return;
+		if(node.GetComponent<NodeScript>().ParentNode != null)
+			node.GetComponent<NodeScript>().ParentNode.GetComponent<NodeScript>().IsLocked = false;
+		Destroy(node);
+	}
+
+	void HandleRefreshNode(GameObject node, bool isRefreshed, GameObject parentNode)
+	{
+		if (isRefreshed) return;
+
+		//if (parentNode != null)
+			//parentNode.GetComponent<NodeScript>().IsLocked = false;
+		node.GetComponent<NodeScript>().RefreshNode(parentNode);
+		Reposition(node, parentNode.transform.localPosition);
+	}
+
+	private void Reposition(GameObject node, Vector3 parentPos)
+	{
+		if (node == null) return;
+
+		Vector3 newPos = node.GetComponent<NodeScript>().GetNewPositionByParentPosition(parentPos);
+		LeanTween.moveLocal(node, newPos, waitTime);
+		Debug.Log("MOVING " + node.GetComponent<NodeScript>().Key + " - Current Pos: " + node.transform.localPosition + " - New Pos: " + newPos);
+
+		if (node.GetComponent<NodeScript>().LeftNode != null)
+			Reposition(node.GetComponent<NodeScript>().LeftNode, newPos);
+
+		if (node.GetComponent<NodeScript>().RightNode != null)
+			Reposition(node.GetComponent<NodeScript>().RightNode, newPos);
+	}
+
+	void HandleSetNodeKey(GameObject node, bool isSet, int key)
+	{
+		if (node == null || isSet) return;
+
+		node.GetComponent<NodeScript>().SetKey(key);
 	}
 }

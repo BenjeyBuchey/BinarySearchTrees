@@ -42,7 +42,7 @@ public class ArrowScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if(isInitialized)
+		//if(isInitialized)
 			UpdateLineRenderer();
 	}
 

@@ -1,14 +1,17 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-enum VisualType { Node = 0, LeftArrow = 1, RightArrow = 2, SpawnNode = 3, FoundNode = 4 }
+enum VisualType { Node = 0, LeftArrow = 1, RightArrow = 2, SpawnNode = 3, FoundNode = 4, DestroyNode = 5, RefreshNode = 6, SetNodeKey = 7 }
 
 public class BSTVisualItem {
 
-	private readonly GameObject _node;
+	private readonly GameObject _node, _parentNode, _tempNode;
 	private readonly int _type;
-	private const string cmd = ">>";
+	private readonly int _enteredKey;
+	private readonly bool _isLeftNode;
+	private const string cmd = " >> ";
 
 	public GameObject Node
 	{
@@ -26,10 +29,46 @@ public class BSTVisualItem {
 		}
 	}
 
-	public BSTVisualItem(GameObject node, int type)
+	public int EnteredKey
+	{
+		get
+		{
+			return _enteredKey;
+		}
+	}
+
+	public bool IsLeftNode
+	{
+		get
+		{
+			return _isLeftNode;
+		}
+	}
+
+	public GameObject ParentNode
+	{
+		get
+		{
+			return _parentNode;
+		}
+	}
+
+	public GameObject TempNode
+	{
+		get
+		{
+			return _tempNode;
+		}
+	}
+
+	public BSTVisualItem(GameObject node, int type, int enteredKey = 0, bool isLeftNode = false, GameObject parentNode = null, GameObject tempNode = null)
 	{
 		_node = node;
 		_type = type;
+		_enteredKey = enteredKey;
+		_isLeftNode = isLeftNode;
+		_parentNode = parentNode;
+		_tempNode = tempNode;
 	}
 
 	public string GetItemMessage()
@@ -46,8 +85,20 @@ public class BSTVisualItem {
 				return SpawnNodeMsg();
 			case (int)VisualType.FoundNode:
 				return FoundNodeMsg();
+			case (int)VisualType.DestroyNode:
+				return DestroyNodeMsg();
+			case (int)VisualType.RefreshNode:
+				return RefreshNodeMsg();
+			case (int)VisualType.SetNodeKey:
+				return SetNodeKeyMsg();
 		}
 		return string.Empty;
+	}
+
+	private string DestroyNodeMsg()
+	{
+		if (_node == null) return string.Empty;
+		return cmd + "Deleted Node: " + _node.GetComponent<NodeScript>().Key;
 	}
 
 	private string NodeMsg()
@@ -70,8 +121,8 @@ public class BSTVisualItem {
 
 	private string SpawnNodeMsg()
 	{
-		if (_node == null) return string.Empty;
-		return cmd + "Spawned Node " + _node.GetComponent<NodeScript>().Key + "!";
+		if (_parentNode == null) return string.Empty;
+		return cmd + "Spawned Node " + _enteredKey + "!";
 	}
 
 	private string FoundNodeMsg()
@@ -80,5 +131,21 @@ public class BSTVisualItem {
 			return cmd +"Node NOT found!";
 		else
 			return cmd + "Node " + _node.GetComponent<NodeScript>().Key + " found!";
+	}
+
+	private string RefreshNodeMsg()
+	{
+		if (_node == null) return string.Empty;
+
+		if (_parentNode == null)
+			return cmd + "Set Node " + _node.GetComponent<NodeScript>().Key + " to Root Node!";
+		else
+			return cmd + "Set Node " + _node.GetComponent<NodeScript>().Key + " Parent to " +_parentNode.GetComponent<NodeScript>().Key;
+	}
+
+	private string SetNodeKeyMsg()
+	{
+		if (_node == null) return string.Empty;
+		return cmd + "Set Node " + +_node.GetComponent<NodeScript>().Key + " to "+ _enteredKey + "!";
 	}
 }

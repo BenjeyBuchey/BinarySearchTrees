@@ -11,6 +11,7 @@ public class NodeScript : MonoBehaviour {
 	private static Color DEFAULT_COLOR = Color.black;
 	private static Color VISUALIZATION_COLOR = Color.red;
 	private bool isInitialized = false;
+	private bool isLocked = false;
 	// treescript. spawn nodes there.
 
 	public int Level
@@ -91,21 +92,34 @@ public class NodeScript : MonoBehaviour {
 		}
 	}
 
+	public bool IsLocked
+	{
+		get
+		{
+			return isLocked;
+		}
+
+		set
+		{
+			isLocked = value;
+		}
+	}
+
 
 	// Use this for initialization
 	void Start () {
-		//gameObject.SetActive(false);
+
 
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if (isInitialized)
-		{
-			SetPosition();
-			SetArrows();
-			//gameObject.SetActive(isInitialized);
-		}
+		//if (isInitialized)
+		//{
+			//SetPosition();
+			if(!isLocked)
+				SetArrows();
+		//}
 	}
 
 	public void Activate(bool isActive)
@@ -189,19 +203,43 @@ public class NodeScript : MonoBehaviour {
 		}
 	}
 
-	public void SetPosition()
+	public Vector3 GetPosition()
 	{
-		if(level == 0)
-		{
-			gameObject.transform.localPosition = NodeManager.ROOT_POSITION;
-			return;
-		}
+		if (level == 0)
+			return gameObject.transform.localPosition = NodeManager.ROOT_POSITION;
 
 		bool isLeftNode = (parentNode.GetComponent<NodeScript>().leftNode == gameObject) ? true : false;
 
 		float x = (isLeftNode) ? parentNode.transform.localPosition.x - NodeManager.X_DIFF / level : parentNode.transform.localPosition.x + NodeManager.X_DIFF / level;
 		Vector3 position = new Vector3(x, parentNode.transform.localPosition.y - NodeManager.Y_DIFF, 0.0f);
-		gameObject.transform.localPosition = position;
+		return position;
+	}
+
+	public void SetPosition()
+	{
+		gameObject.transform.localPosition = GetPosition();
+	}
+
+	public Vector3 GetChildPosition(bool isLeftNode)
+	{
+		Debug.Log(gameObject.transform.localPosition.y);
+		Debug.Log(NodeManager.Y_DIFF);
+		int levelChild = level+1;
+		float x = (isLeftNode) ? gameObject.transform.localPosition.x - NodeManager.X_DIFF / levelChild : gameObject.transform.localPosition.x + NodeManager.X_DIFF / levelChild;
+		Vector3 position = new Vector3(x, gameObject.transform.localPosition.y - NodeManager.Y_DIFF, 0.0f);
+		return position;
+	}
+
+	public Vector3 GetNewPositionByParentPosition(Vector3 parentPos)
+	{
+		if (level == 0)
+			return gameObject.transform.localPosition = NodeManager.ROOT_POSITION;
+
+		bool isLeftNode = (parentNode.GetComponent<NodeScript>().leftNode == gameObject) ? true : false;
+
+		float x = (isLeftNode) ? parentPos.x - NodeManager.X_DIFF / level : parentPos.x + NodeManager.X_DIFF / level;
+		Vector3 position = new Vector3(x, parentPos.y - NodeManager.Y_DIFF, 0.0f);
+		return position;
 	}
 
 	public void SetKey(int val)

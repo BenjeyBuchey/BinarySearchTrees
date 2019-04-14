@@ -36,6 +36,12 @@ public class TreeScript : MonoBehaviour {
 		AddNode(70);
 		AddNode(60);
 		AddNode(80);
+		AddNode(39);
+		AddNode(38);
+		AddNode(37);
+		AddNode(35);
+		AddNode(36);
+		AddNode(34);
 		Inorder(root);
 		isInitializing = false;
 	}
@@ -71,9 +77,9 @@ public class TreeScript : MonoBehaviour {
 		}
 	}
 
-	private GameObject AddNode(int key)
+	private void AddNode(int key)
 	{
-		return Insert(root, false, key, null);
+		Insert(root, false, key, null);
 	}
 
 	public void ButtonAddNode()
@@ -84,7 +90,7 @@ public class TreeScript : MonoBehaviour {
 		isRunning = true;
 		bstVisual.ClearItems();
 		bstVisual.Key = key;
-		GameObject go = AddNode(key);
+		AddNode(key);
 
 		StartVisualization();
 	}
@@ -111,24 +117,30 @@ public class TreeScript : MonoBehaviour {
 		int key = -1;
 		if (!int.TryParse(inputFieldDeleteNode.text, out key)) return;
 
-		//GameObject go = Search(root, key);
+		isRunning = true;
 		bstVisual.ClearItems();
 		bstVisual.Key = key;
 		Delete(root, key);
+		StartVisualization();
 	}
 
 	private GameObject Delete(GameObject node, int key)
 	{
+		bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.Node));
 		if (node == null) return node;
 
 		// key to be deleted smaller than root key --> it's in the left subtree
 		if (key < node.GetComponent<NodeScript>().Key)
 		{
+			bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.LeftArrow));
+			node.GetComponent<NodeScript>().IsLocked = true;
 			node.GetComponent<NodeScript>().LeftNode = Delete(node.GetComponent<NodeScript>().LeftNode, key);
 		}
 		// key greater --> right subtree
 		else if (key > node.GetComponent<NodeScript>().Key)
 		{
+			bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.RightArrow));
+			node.GetComponent<NodeScript>().IsLocked = true;
 			node.GetComponent<NodeScript>().RightNode = Delete(node.GetComponent<NodeScript>().RightNode, key);
 		}
 		// key equal --> this node gets deleted
@@ -138,19 +150,23 @@ public class TreeScript : MonoBehaviour {
 			if (node.GetComponent<NodeScript>().LeftNode == null)
 			{
 				GameObject temp = node.GetComponent<NodeScript>().RightNode;
+				bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.DestroyNode));
 				if (temp != null)
-					temp.GetComponent<NodeScript>().RefreshNode(node.GetComponent<NodeScript>().ParentNode);
+					bstVisual.Items.Add(new BSTVisualItem(temp, (int)VisualType.RefreshNode, parentNode: node.GetComponent<NodeScript>().ParentNode));
+					//temp.GetComponent<NodeScript>().RefreshNode(node.GetComponent<NodeScript>().ParentNode);
 
-				Destroy(node);
+				//Destroy(node);
 				return temp;
 			}
 			else if (node.GetComponent<NodeScript>().RightNode == null)
 			{
 				GameObject temp = node.GetComponent<NodeScript>().LeftNode;
+				bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.DestroyNode));
 				if (temp != null)
-					temp.GetComponent<NodeScript>().RefreshNode(node.GetComponent<NodeScript>().ParentNode);
+					bstVisual.Items.Add(new BSTVisualItem(temp, (int)VisualType.RefreshNode, parentNode: node.GetComponent<NodeScript>().ParentNode));
+					//temp.GetComponent<NodeScript>().RefreshNode(node.GetComponent<NodeScript>().ParentNode);
 
-				Destroy(node);
+				//Destroy(node);
 				return temp;
 			}
 
@@ -158,16 +174,29 @@ public class TreeScript : MonoBehaviour {
 			GameObject inorderSuccessor = InorderSuccessor(node.GetComponent<NodeScript>().RightNode);
 			if(inorderSuccessor != null)
 			{
-				node.GetComponent<NodeScript>().SetKey(inorderSuccessor.GetComponent<NodeScript>().Key);
+				bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.SetNodeKey, enteredKey: inorderSuccessor.GetComponent<NodeScript>().Key));
+				//node.GetComponent<NodeScript>().SetKey(inorderSuccessor.GetComponent<NodeScript>().Key);
 				node.GetComponent<NodeScript>().RightNode = Delete(node.GetComponent<NodeScript>().RightNode, inorderSuccessor.GetComponent<NodeScript>().Key);
 			}
 		}
 		return node;
 	}
 
-	private GameObject Insert(GameObject node, bool isLeftNode, int key, GameObject parentNode)
+	private void Insert(GameObject node, bool isLeftNode, int key, GameObject parentNode)
 	{
-		if (node == null) return SpawnNode(isLeftNode, key, parentNode);
+		if (node == null)
+		{
+			if(isInitializing)
+			{
+				SpawnNode(isLeftNode, key, parentNode);
+				return;
+			}
+			else
+				bstVisual.Items.Add(new BSTVisualItem(null, (int)VisualType.SpawnNode, key, isLeftNode, parentNode));
+
+			return;
+		}
+
 		bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.Node));
 
 		if (key < node.GetComponent<NodeScript>().Key)
@@ -181,33 +210,33 @@ public class TreeScript : MonoBehaviour {
 			Insert(node.GetComponent<NodeScript>().RightNode, false, key, node);
 		}
 
-		return node;
+		return;
 	}
 
-	private GameObject SpawnNode(bool isLeftNode, int key, GameObject parentNode)
+	public GameObject SpawnNode(bool isLeftNode, int key, GameObject parentNode)
 	{
-		// spawn new node
+		// spawn new node & set position
+		Vector3 pos = parentNode == null ? NodeManager.ROOT_POSITION : parentNode.GetComponent<NodeScript>().GetChildPosition(isLeftNode);
 		GameObject node = Instantiate(nodePrefab, gameObject.transform);
+		node.transform.localPosition = pos;
 
 		if (root == null)
 		{
 			root = node;
 			root.GetComponent<NodeScript>().SetKey(key);
-			root.GetComponent<NodeScript>().Activate(true);
+			//root.GetComponent<NodeScript>().Activate(true);
 			return root;
 		}
-
-		bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.SpawnNode));
 
 		if (isLeftNode)
 			parentNode.GetComponent<NodeScript>().SetChildNodeLeft(node, key);
 		else
 			parentNode.GetComponent<NodeScript>().SetChildNodeRight(node, key);
 
-		if (isInitializing)
-			node.GetComponent<NodeScript>().Activate(true);
-		else
-			node.GetComponent<NodeScript>().Activate(false);
+		//if (isInitializing)
+		//	node.GetComponent<NodeScript>().Activate(true);
+		//else
+		//	node.GetComponent<NodeScript>().Activate(false);
 
 		return node;
 	}
@@ -244,5 +273,20 @@ public class TreeScript : MonoBehaviour {
 			current = current.GetComponent<NodeScript>().LeftNode;
 
 		return current;
+	}
+
+	public void Unlock()
+	{
+		UnlockNodes(root);
+	}
+
+	private void UnlockNodes(GameObject node)
+	{
+		if (node != null)
+		{
+			UnlockNodes(node.GetComponent<NodeScript>().LeftNode);
+			node.GetComponent<NodeScript>().IsLocked = false;
+			UnlockNodes(node.GetComponent<NodeScript>().RightNode);
+		}
 	}
 }
