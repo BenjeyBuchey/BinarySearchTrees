@@ -40,6 +40,14 @@ public class VisualScript : MonoBehaviour {
 			StartCoroutine(DoStepForward());
 	}
 
+	public void StepBackwards()
+	{
+		if (isBusy) return;
+
+		if (_visualizationCounter <= _bstVisual.Items.Count && _visualizationCounter > 0) // because with forward visual we are already one item ahead
+			StartCoroutine(DoStepBackwards());
+	}
+
 	public void StepEnd()
 	{
 		if (isBusy) return;
@@ -111,6 +119,30 @@ public class VisualScript : MonoBehaviour {
 		isBusy = false;
 	}
 
+	IEnumerator DoStepBackwards()
+	{
+		isBusy = true;
+        _visualizationCounter--; // now we are at last processed item
+        if (_visualizationCounter < _bstVisual.Items.Count)
+			HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter], true);
+
+		UpdateVisualizationSpeed();
+		RemoveLastLogEntry();
+        if (_visualizationCounter > 0)
+        {
+            HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter - 1], false);
+        }
+        else
+        {
+            isBusy = false;
+            yield break;
+        }
+
+        yield return new WaitForSeconds(waitTime);
+        //_visualizationCounter--;
+        isBusy = false;
+	}
+
 	IEnumerator DoStepEnd()
 	{
 		isBusy = true;
@@ -142,8 +174,28 @@ public class VisualScript : MonoBehaviour {
 
 	private void AddLogEntry(string msg)
 	{
-		logs.GetComponent<Text>().text += msg + System.Environment.NewLine;
+		if (logs.GetComponent<Text>().text != String.Empty)
+			logs.GetComponent<Text>().text += System.Environment.NewLine;
+
+		logs.GetComponent<Text>().text += msg;
+		//logs.GetComponent<Text>().text += msg + System.Environment.NewLine;
 		scrollView.GetComponent<ScrollRect>().verticalNormalizedPosition = 0f;
+	}
+
+	private void RemoveLastLogEntry()
+	{
+		string text = logs.GetComponent<Text>().text;
+        int index = text.LastIndexOf(System.Environment.NewLine);
+
+        if (index < 0)
+            logs.GetComponent<Text>().text = String.Empty;
+        else
+            logs.GetComponent<Text>().text = text.Substring(0, index);
+		scrollView.GetComponent<ScrollRect>().verticalNormalizedPosition = 0f;
+		//string[] lines = logs.GetComponent<Text>().text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+		//logs.GetComponent<Text>().text = String.Empty;
+		//for (int i = 0; i < lines.Length - 1; i++)
+		//	logs.GetComponent<Text>().text += lines[i];
 	}
 
 	private void UpdateVisualizationSpeed()
@@ -193,6 +245,36 @@ public class VisualScript : MonoBehaviour {
 			case (int)VisualType.SetNodeKey:
 				HandleSetNodeKey(node, isDefaultColor, item.EnteredKey);
 				break;
+		}
+	}
+
+	void HandleVisualizationItemBackwards(BSTVisualItem item, bool isDefaultColor)
+	{
+		GameObject node = item.Node;
+
+		switch (item.Type)
+		{
+			case (int)VisualType.Node:
+				HandleNode(node, isDefaultColor);
+				break;
+			case (int)VisualType.LeftArrow:
+				HandleArrow(node, isDefaultColor, true);
+				break;
+			case (int)VisualType.RightArrow:
+				HandleArrow(node, isDefaultColor, false);
+				break;
+			//case (int)VisualType.SpawnNode:
+			//	HandleSpawnNode(isDefaultColor, item.IsLeftNode, item.EnteredKey, item.ParentNode);
+			//	break;
+			//case (int)VisualType.DestroyNode:
+			//	HandleDestroyNode(node, isDefaultColor);
+			//	break;
+			//case (int)VisualType.RefreshNode:
+			//	HandleRefreshNode(node, isDefaultColor, item.ParentNode);
+			//	break;
+			//case (int)VisualType.SetNodeKey:
+			//	HandleSetNodeKey(node, isDefaultColor, item.EnteredKey);
+			//	break;
 		}
 	}
 

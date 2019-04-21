@@ -86,12 +86,9 @@ public class SwapManagerScript : MonoBehaviour {
 	{
 		if (!isPaused) return;
 
-		//MoveScript[] moveScripts = FindObjectsOfType<MoveScript>() as MoveScript[];
-		//if (moveScripts == null || moveScripts.Length == 0) return;
+		VisualScript visualScript = FindObjectOfType<VisualScript>();
+		if (visualScript == null) return;
 
-		//foreach (MoveScript ms in moveScripts)
-		//{
-		//	ms.StepBackwards();
-		//}
+		visualScript.StepBackwards();
 	}
 }
