@@ -10,6 +10,8 @@ public class VisualScript : MonoBehaviour {
 	private float waitTime = 1.0f;
 	public GameObject logs, scrollView;
 	public Slider visualizationSpeedSlider;
+	private bool isBusy = false;
+	private int _visualizationCounter = 0;
 	// Use this for initialization
 	void Start () {
 
@@ -26,24 +28,135 @@ public class VisualScript : MonoBehaviour {
 
 		_bstVisual = bstVisual;
 		logs.GetComponent<Text>().text = string.Empty;
+		_visualizationCounter = 0;
 		StartCoroutine(DoVisualize());
+	}
+
+	public void StepForward()
+	{
+		if (isBusy) return;
+
+		if (_visualizationCounter < _bstVisual.Items.Count)
+			StartCoroutine(DoStepForward());
+	}
+
+	public void StepEnd()
+	{
+		if (isBusy) return;
+
+		if (_visualizationCounter < _bstVisual.Items.Count)
+			StartCoroutine(DoStepEnd());
+	}
+
+	public void ResumeVisualization()
+	{
+		if (_bstVisual == null || _bstVisual.Items.Count == 0) return;
+
+		if (!gameObject.GetComponent<TreeScript>().IsRunning)
+			StartCoroutine(DoVisualize());
 	}
 
 	IEnumerator DoVisualize()
 	{
-		// add log msg, change color of node and arrow
-		foreach(BSTVisualItem item in _bstVisual.Items)
+		gameObject.GetComponent<TreeScript>().IsRunning = true;
+
+		for (; _visualizationCounter < _bstVisual.Items.Count; _visualizationCounter++)
 		{
-			waitTime = visualizationSpeedSlider.value * -1;
-			logs.GetComponent<Text>().text += item.GetItemMessage() + System.Environment.NewLine;
-			scrollView.GetComponent<ScrollRect>().verticalNormalizedPosition = 0f;
-			HandleVisualizationItem(item, false);
+			while (IsPaused() || isBusy)
+				yield return null;
+
+			if (_visualizationCounter > 0)
+				HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
+
+			if (_visualizationCounter >= _bstVisual.Items.Count)
+			{
+				Reset();
+				yield break;
+			}
+
+			UpdateVisualizationSpeed();
+			AddLogEntry(_bstVisual.Items[_visualizationCounter].GetItemMessage());
+			HandleVisualizationItem(_bstVisual.Items[_visualizationCounter], false);
 
 			yield return new WaitForSeconds(waitTime);
 
-			HandleVisualizationItem(item, true);
+			//HandleVisualizationItem(item, true);
 		}
+		if (_visualizationCounter <= _bstVisual.Items.Count)
+			HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
+
 		Reset();
+	}
+
+	IEnumerator DoStepForward()
+	{
+		isBusy = true;
+		UpdateVisualizationSpeed();
+
+		if (_visualizationCounter > 0)
+			HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
+
+		if (_visualizationCounter >= _bstVisual.Items.Count) yield break;
+
+		AddLogEntry(_bstVisual.Items[_visualizationCounter].GetItemMessage());
+		HandleVisualizationItem(_bstVisual.Items[_visualizationCounter], false);
+		yield return new WaitForSeconds(waitTime);
+
+		_visualizationCounter++;
+
+		// DO LAST ITEM
+		//if (_visualizationCounter <= _bstVisual.Items.Count)
+		//	HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
+
+		isBusy = false;
+	}
+
+	IEnumerator DoStepEnd()
+	{
+		isBusy = true;
+		waitTime = 0.1f;
+
+		for (; _visualizationCounter < _bstVisual.Items.Count; _visualizationCounter++)
+		{
+			if (_visualizationCounter > 0)
+				HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
+
+			if (_visualizationCounter >= _bstVisual.Items.Count)
+			{
+				Reset();
+				yield break;
+			}
+
+			AddLogEntry(_bstVisual.Items[_visualizationCounter].GetItemMessage());
+			HandleVisualizationItem(_bstVisual.Items[_visualizationCounter], false);
+
+			yield return new WaitForSeconds(waitTime);
+		}
+
+		if (_visualizationCounter <= _bstVisual.Items.Count)
+			HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
+
+		Reset();
+		isBusy = false;
+	}
+
+	private void AddLogEntry(string msg)
+	{
+		logs.GetComponent<Text>().text += msg + System.Environment.NewLine;
+		scrollView.GetComponent<ScrollRect>().verticalNormalizedPosition = 0f;
+	}
+
+	private void UpdateVisualizationSpeed()
+	{
+		waitTime = visualizationSpeedSlider.value * -1;
+	}
+
+	private bool IsPaused()
+	{
+		SwapManagerScript sms = GameObject.Find("Controls").GetComponent<SwapManagerScript>();
+		if (sms == null) return false;
+
+		return sms.isPaused;
 	}
 
 	private void Reset()
@@ -56,7 +169,6 @@ public class VisualScript : MonoBehaviour {
 	void HandleVisualizationItem(BSTVisualItem item, bool isDefaultColor)
 	{
 		GameObject node = item.Node;
-		//if (node == null) return;
 
 		switch(item.Type)
 		{
