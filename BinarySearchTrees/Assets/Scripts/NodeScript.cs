@@ -144,6 +144,29 @@ public class NodeScript : MonoBehaviour {
 		ascript.IsInitialized = isActive;
 	}
 
+    public void RemoveChildReference(GameObject childNode)
+    {
+        ResetArrowToChild(childNode);
+        if (childNode == leftNode)
+            leftNode = null;
+        else if (childNode == rightNode)
+            rightNode = null;
+    }
+
+    private void ResetArrowToChild(GameObject childNode)
+    {
+        string arrStr = string.Empty;
+        if (childNode == leftNode)
+            arrStr = "ArrowLeft";
+        else if (childNode == rightNode)
+            arrStr = "ArrowRight";
+
+        GameObject arrow = gameObject.transform.Find(arrStr).gameObject;
+        ArrowScript ascript = arrow.GetComponent<ArrowScript>();
+        if(ascript != null)
+            ascript.ToNode = null;
+    }
+
 	public void SetChildNodeLeft(GameObject node, int childKey)
 	{
 		leftNode = node;
@@ -347,4 +370,13 @@ public class NodeScript : MonoBehaviour {
 		else
 			script.SetVisualizationColor();
 	}
+
+    public void RemoveReferences()
+    {
+        leftNode = null;
+        rightNode = null;
+        if (parentNode == null) return;
+
+        parentNode.GetComponent<NodeScript>().RemoveChildReference(gameObject);
+    }
 }

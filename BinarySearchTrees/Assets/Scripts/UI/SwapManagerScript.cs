@@ -44,22 +44,17 @@ public class SwapManagerScript : MonoBehaviour {
 		if (visualScript == null) return;
 
 		visualScript.ResumeVisualization();
-
-		//MoveScript[] moveScripts = FindObjectsOfType<MoveScript>() as MoveScript[];
-		//if (moveScripts == null || moveScripts.Length == 0) return;
-
-		//foreach (MoveScript ms in moveScripts)
-		//{
-		//	ms.ResumeVisualization();
-		//}
 	}
 
 	public void Begin()
 	{
 		if (!isPaused) return;
 
-		
-	}
+        VisualScript visualScript = FindObjectOfType<VisualScript>();
+        if (visualScript == null) return;
+
+        visualScript.StepBegin();
+    }
 
 	public void End()
 	{
@@ -71,7 +66,6 @@ public class SwapManagerScript : MonoBehaviour {
 		visualScript.StepEnd();
 	}
 
-	// execute next step for all sorting boxes that are in use (we can just find all movescripts)
 	public void Next()
 	{
 		if (!isPaused) return;

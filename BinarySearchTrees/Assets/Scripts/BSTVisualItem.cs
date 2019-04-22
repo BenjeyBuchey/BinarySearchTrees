@@ -3,15 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-enum VisualType { Node = 0, LeftArrow = 1, RightArrow = 2, SpawnNode = 3, FoundNode = 4, DestroyNode = 5, RefreshNode = 6, SetNodeKey = 7 }
+enum VisualType { Node = 0, LeftArrow = 1, RightArrow = 2, SpawnNode = 3, FoundNode = 4, DestroyNode = 5, RefreshNode = 6, SetNodeKey = 7, InorderSuccessor = 8, InorderSuccessorMove = 9,
+InorderSuccessorDestroy = 10, InorderSuccessorFound = 11 }
 
 public class BSTVisualItem {
 
-	private readonly GameObject _node, _parentNode, _tempNode;
+	private readonly GameObject _parentNode, _tempNode;
+    private GameObject _node;
 	private readonly int _type;
 	private readonly int _enteredKey;
 	private readonly bool _isLeftNode;
 	private const string cmd = " >> ";
+    private Vector3 _inorderPosition, _dest;
 
 	public GameObject Node
 	{
@@ -19,6 +22,11 @@ public class BSTVisualItem {
 		{
 			return _node;
 		}
+
+        set
+        {
+            _node = value;
+        }
 	}
 
 	public int Type
@@ -61,7 +69,11 @@ public class BSTVisualItem {
 		}
 	}
 
-	public BSTVisualItem(GameObject node, int type, int enteredKey = 0, bool isLeftNode = false, GameObject parentNode = null, GameObject tempNode = null)
+    public Vector3 InorderPosition { get => _inorderPosition; set => _inorderPosition = value; }
+    public Vector3 Dest { get => _dest; set => _dest = value; }
+
+    public BSTVisualItem(GameObject node, int type, int enteredKey = 0, bool isLeftNode = false, GameObject parentNode = null, GameObject tempNode = null, Vector3 inorderPosition = new Vector3(),
+        Vector3 dest = new Vector3())
 	{
 		_node = node;
 		_type = type;
@@ -69,6 +81,8 @@ public class BSTVisualItem {
 		_isLeftNode = isLeftNode;
 		_parentNode = parentNode;
 		_tempNode = tempNode;
+        _inorderPosition = inorderPosition;
+        _dest = dest;
 	}
 
 	public string GetItemMessage()
@@ -91,11 +105,43 @@ public class BSTVisualItem {
 				return RefreshNodeMsg();
 			case (int)VisualType.SetNodeKey:
 				return SetNodeKeyMsg();
-		}
+            case (int)VisualType.InorderSuccessor:
+                return SetInorderSuccessorMsg();
+            case (int)VisualType.InorderSuccessorMove:
+                return SetInorderSuccessorMoveMsg();
+            case (int)VisualType.InorderSuccessorDestroy:
+                return SetInorderSuccessorDestroyMsg();
+            case (int)VisualType.InorderSuccessorFound:
+                return SetInorderSuccessorFoundMsg();
+        }
 		return string.Empty;
 	}
 
-	private string DestroyNodeMsg()
+    private string SetInorderSuccessorFoundMsg()
+    {
+        if (_node == null) return string.Empty;
+        return cmd + "Inorder Successor found: " + _node.GetComponent<NodeScript>().Key;
+    }
+
+    private string SetInorderSuccessorDestroyMsg()
+    {
+        if (_node == null) return string.Empty;
+        return cmd + "Removing Inorder Successor " + _node.GetComponent<NodeScript>().Key;
+    }
+
+    private string SetInorderSuccessorMoveMsg()
+    {
+        if (_node == null) return string.Empty;
+        return cmd + "Setting Node " + _enteredKey + " to Inorder Successor " + _node.GetComponent<NodeScript>().Key;
+    }
+
+    private string SetInorderSuccessorMsg()
+    {
+        if (_node == null) return string.Empty;
+        return cmd + "Node " + _node.GetComponent<NodeScript>().Key +" has 2 children --> Searching Inorder Successor!";
+    }
+
+    private string DestroyNodeMsg()
 	{
 		if (_node == null) return string.Empty;
 		return cmd + "Deleted Node: " + _node.GetComponent<NodeScript>().Key;

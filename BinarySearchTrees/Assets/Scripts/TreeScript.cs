@@ -170,15 +170,28 @@ public class TreeScript : MonoBehaviour {
 				return temp;
 			}
 
-			// node has two children --> find inorder successor, set node to inorder successor value, delete inorder successor
-			GameObject inorderSuccessor = InorderSuccessor(node.GetComponent<NodeScript>().RightNode);
+            // node has two children --> find inorder successor, set node to inorder successor value, delete inorder successor
+            bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.InorderSuccessor));
+            bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.RightArrow));
+            GameObject inorderSuccessor = InorderSuccessor(node.GetComponent<NodeScript>().RightNode);
 			if(inorderSuccessor != null)
 			{
-				bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.SetNodeKey, enteredKey: inorderSuccessor.GetComponent<NodeScript>().Key));
-				//node.GetComponent<NodeScript>().SetKey(inorderSuccessor.GetComponent<NodeScript>().Key);
-				node.GetComponent<NodeScript>().RightNode = Delete(node.GetComponent<NodeScript>().RightNode, inorderSuccessor.GetComponent<NodeScript>().Key);
-			}
-		}
+                bstVisual.Items.Add(new BSTVisualItem(inorderSuccessor, (int)VisualType.InorderSuccessorFound));
+                int inorderSuccessorKey = inorderSuccessor.GetComponent<NodeScript>().Key;
+
+                Vector3 dest = node.transform.localPosition;
+                dest.y -= node.transform.localScale.y / 2;
+                bstVisual.Items.Add(new BSTVisualItem(inorderSuccessor, (int)VisualType.InorderSuccessorMove, inorderPosition: inorderSuccessor.transform.localPosition,
+                    dest: dest, enteredKey: key, parentNode: inorderSuccessor.GetComponent<NodeScript>().ParentNode));
+                bstVisual.Items.Add(new BSTVisualItem(inorderSuccessor, (int)VisualType.InorderSuccessorDestroy, tempNode: node, inorderPosition: dest, enteredKey: inorderSuccessorKey));
+                // todo: if inorderSuccessor has right child...........
+                // MAKE MOVE & CHANGE KEY 1 STEP? AND WHEN GOING BACKWARDS JUST SET BACK TO OLD STATE WITHOUT ANIMATION !??!!?!?!?
+                // let inorderSucc get deleted by standard way below...
+
+                //bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.SetNodeKey, enteredKey: inorderSuccessor.GetComponent<NodeScript>().Key));
+                node.GetComponent<NodeScript>().RightNode = Delete(node.GetComponent<NodeScript>().RightNode, inorderSuccessor.GetComponent<NodeScript>().Key);
+            }
+        }
 		return node;
 	}
 
@@ -224,7 +237,6 @@ public class TreeScript : MonoBehaviour {
 		{
 			root = node;
 			root.GetComponent<NodeScript>().SetKey(key);
-			//root.GetComponent<NodeScript>().Activate(true);
 			return root;
 		}
 
@@ -233,13 +245,13 @@ public class TreeScript : MonoBehaviour {
 		else
 			parentNode.GetComponent<NodeScript>().SetChildNodeRight(node, key);
 
-		//if (isInitializing)
-		//	node.GetComponent<NodeScript>().Activate(true);
-		//else
-		//	node.GetComponent<NodeScript>().Activate(false);
-
 		return node;
 	}
+
+    public GameObject SpawnNode()
+    {
+        return Instantiate(nodePrefab, gameObject.transform);
+    }
 
 	private GameObject Search(GameObject node, int key)
 	{
@@ -269,8 +281,12 @@ public class TreeScript : MonoBehaviour {
 		GameObject current = node;
 		if (current == null) return null;
 
-		while (current.GetComponent<NodeScript>().LeftNode != null)
-			current = current.GetComponent<NodeScript>().LeftNode;
+        while (current.GetComponent<NodeScript>().LeftNode != null)
+        {
+            bstVisual.Items.Add(new BSTVisualItem(current, (int)VisualType.Node));
+            bstVisual.Items.Add(new BSTVisualItem(current, (int)VisualType.LeftArrow));
+            current = current.GetComponent<NodeScript>().LeftNode;
+        }
 
 		return current;
 	}
