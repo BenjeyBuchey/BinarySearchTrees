@@ -82,10 +82,15 @@ public class TreeScript : MonoBehaviour {
 		Insert(root, false, key, null);
 	}
 
-	public void ButtonAddNode()
+    private bool IsBusy()
+    {
+        return gameObject.GetComponent<VisualScript>().IsBusy;
+    }
+
+    public void ButtonAddNode()
 	{
 		int key = -1;
-		if (!int.TryParse(inputFieldAddNode.text, out key) || isRunning) return;
+		if (!int.TryParse(inputFieldAddNode.text, out key) || isRunning || IsBusy()) return;
 
 		isRunning = true;
 		bstVisual.ClearItems();
@@ -95,10 +100,10 @@ public class TreeScript : MonoBehaviour {
 		StartVisualization();
 	}
 
-	public void ButtonSearchNode()
+    public void ButtonSearchNode()
 	{
 		int key = -1;
-		if (!int.TryParse(inputFieldSearchNode.text, out key)) return;
+		if (!int.TryParse(inputFieldSearchNode.text, out key) || isRunning || IsBusy()) return;
 
 		isRunning = true;
 		bstVisual.ClearItems();
@@ -115,7 +120,7 @@ public class TreeScript : MonoBehaviour {
 	{
 		Debug.Log("DELETING: " + inputFieldDeleteNode.text);
 		int key = -1;
-		if (!int.TryParse(inputFieldDeleteNode.text, out key)) return;
+		if (!int.TryParse(inputFieldDeleteNode.text, out key) || isRunning || IsBusy()) return;
 
 		isRunning = true;
 		bstVisual.ClearItems();
@@ -150,24 +155,32 @@ public class TreeScript : MonoBehaviour {
 			if (node.GetComponent<NodeScript>().LeftNode == null)
 			{
 				GameObject temp = node.GetComponent<NodeScript>().RightNode;
-				bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.DestroyNode));
-				if (temp != null)
-					bstVisual.Items.Add(new BSTVisualItem(temp, (int)VisualType.RefreshNode, parentNode: node.GetComponent<NodeScript>().ParentNode));
-					//temp.GetComponent<NodeScript>().RefreshNode(node.GetComponent<NodeScript>().ParentNode);
+                BSTVisualItem item = new BSTVisualItem(node, (int)VisualType.DestroyNode, enteredKey: key, parentNode: node.GetComponent<NodeScript>().ParentNode);
+                bstVisual.Items.Add(item);
+                //bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.DestroyNode));
+                if (temp != null)
+                {
+                    //item.ParentNode = node.GetComponent<NodeScript>().ParentNode;
+                    item.TempNode = temp;
+                    //bstVisual.Items.Add(new BSTVisualItem(temp, (int)VisualType.RefreshNode, parentNode: node.GetComponent<NodeScript>().ParentNode));
+                }
 
-				//Destroy(node);
-				return temp;
+                return temp;
 			}
 			else if (node.GetComponent<NodeScript>().RightNode == null)
 			{
 				GameObject temp = node.GetComponent<NodeScript>().LeftNode;
-				bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.DestroyNode));
-				if (temp != null)
-					bstVisual.Items.Add(new BSTVisualItem(temp, (int)VisualType.RefreshNode, parentNode: node.GetComponent<NodeScript>().ParentNode));
-					//temp.GetComponent<NodeScript>().RefreshNode(node.GetComponent<NodeScript>().ParentNode);
+                //bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.DestroyNode));
+                BSTVisualItem item = new BSTVisualItem(node, (int)VisualType.DestroyNode, enteredKey: key, parentNode: node.GetComponent<NodeScript>().ParentNode);
+                bstVisual.Items.Add(item);
+                if (temp != null)
+                {
+                    //item.ParentNode = node.GetComponent<NodeScript>().ParentNode;
+                    item.TempNode = temp;
+                    //bstVisual.Items.Add(new BSTVisualItem(temp, (int)VisualType.RefreshNode, parentNode: node.GetComponent<NodeScript>().ParentNode));
+                }
 
-				//Destroy(node);
-				return temp;
+                return temp;
 			}
 
             // node has two children --> find inorder successor, set node to inorder successor value, delete inorder successor
@@ -180,15 +193,15 @@ public class TreeScript : MonoBehaviour {
                 int inorderSuccessorKey = inorderSuccessor.GetComponent<NodeScript>().Key;
 
                 Vector3 dest = node.transform.localPosition;
-                dest.y -= node.transform.localScale.y / 2;
-                bstVisual.Items.Add(new BSTVisualItem(inorderSuccessor, (int)VisualType.InorderSuccessorMove, inorderPosition: inorderSuccessor.transform.localPosition,
-                    dest: dest, enteredKey: key, parentNode: inorderSuccessor.GetComponent<NodeScript>().ParentNode));
-                bstVisual.Items.Add(new BSTVisualItem(inorderSuccessor, (int)VisualType.InorderSuccessorDestroy, tempNode: node, inorderPosition: dest, enteredKey: inorderSuccessorKey));
-                // todo: if inorderSuccessor has right child...........
-                // MAKE MOVE & CHANGE KEY 1 STEP? AND WHEN GOING BACKWARDS JUST SET BACK TO OLD STATE WITHOUT ANIMATION !??!!?!?!?
-                // let inorderSucc get deleted by standard way below...
+                //dest.y -= node.transform.localScale.y / 2;
 
-                //bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.SetNodeKey, enteredKey: inorderSuccessor.GetComponent<NodeScript>().Key));
+                bstVisual.Items.Add(new BSTVisualItem(inorderSuccessor, (int)VisualType.InorderSuccessorMove, inorderPosition: inorderSuccessor.transform.localPosition,
+                    dest: dest, enteredKey: key, parentNode: inorderSuccessor.GetComponent<NodeScript>().ParentNode, inorderKey: inorderSuccessorKey));
+                //bstVisual.Items.Add(new BSTVisualItem(inorderSuccessor, (int)VisualType.InorderSuccessorDestroy, tempNode: node, inorderPosition: dest, enteredKey: inorderSuccessorKey));
+
+
+                bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.SetNodeKey, enteredKey: key, inorderKey: inorderSuccessorKey));
+                bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.RightArrow));
                 node.GetComponent<NodeScript>().RightNode = Delete(node.GetComponent<NodeScript>().RightNode, inorderSuccessor.GetComponent<NodeScript>().Key);
             }
         }

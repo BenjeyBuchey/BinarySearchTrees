@@ -8,10 +8,9 @@ InorderSuccessorDestroy = 10, InorderSuccessorFound = 11 }
 
 public class BSTVisualItem {
 
-	private readonly GameObject _parentNode, _tempNode;
-    private GameObject _node;
+    private GameObject _node, _parentNode, _tempNode;
 	private readonly int _type;
-	private readonly int _enteredKey;
+	private readonly int _enteredKey, _inorderKey;
 	private readonly bool _isLeftNode;
 	private const string cmd = " >> ";
     private Vector3 _inorderPosition, _dest;
@@ -59,7 +58,12 @@ public class BSTVisualItem {
 		{
 			return _parentNode;
 		}
-	}
+
+        set
+        {
+            _parentNode = value;
+        }
+    }
 
 	public GameObject TempNode
 	{
@@ -67,13 +71,22 @@ public class BSTVisualItem {
 		{
 			return _tempNode;
 		}
-	}
+
+        set
+        {
+            _tempNode = value;
+        }
+    }
 
     public Vector3 InorderPosition { get => _inorderPosition; set => _inorderPosition = value; }
     public Vector3 Dest { get => _dest; set => _dest = value; }
 
+    public int EnteredKey1 => _enteredKey;
+
+    public int InorderKey => _inorderKey;
+
     public BSTVisualItem(GameObject node, int type, int enteredKey = 0, bool isLeftNode = false, GameObject parentNode = null, GameObject tempNode = null, Vector3 inorderPosition = new Vector3(),
-        Vector3 dest = new Vector3())
+        Vector3 dest = new Vector3(), int inorderKey = 0)
 	{
 		_node = node;
 		_type = type;
@@ -83,6 +96,7 @@ public class BSTVisualItem {
 		_tempNode = tempNode;
         _inorderPosition = inorderPosition;
         _dest = dest;
+        _inorderKey = inorderKey;
 	}
 
 	public string GetItemMessage()
