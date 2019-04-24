@@ -12,7 +12,6 @@ public class NodeScript : MonoBehaviour {
 	private static Color VISUALIZATION_COLOR = Color.red;
 	private bool isInitialized = false;
 	private bool isLocked = false;
-	// treescript. spawn nodes there.
 
 	public int Level
 	{
@@ -303,11 +302,8 @@ public class NodeScript : MonoBehaviour {
 	// gets called when one node gets deleted and new parent&children need to be set
 	public void RefreshNode(GameObject newParentNode)
 	{
-		//Debug.Log("KEY: " +key + " - CURRENT LEVEL: " + level);
-
 		parentNode = newParentNode;
 		RefreshLevels();
-		//Debug.Log("KEY: " + key + " - NEW LEVEL: " + level);
 		if (parentNode == null) return;
 
 		// becomes right node
@@ -328,8 +324,6 @@ public class NodeScript : MonoBehaviour {
 			leftNode.GetComponent<NodeScript>().RefreshLevels();
 		if(rightNode != null)
 			rightNode.GetComponent<NodeScript>().RefreshLevels();
-		//Debug.Log("KEY: " + key + " - PARENT KEY: " + parentNode.GetComponent<NodeScript>().Key);
-		
 	}
 
 	private void SetRoot()

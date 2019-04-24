@@ -112,10 +112,6 @@ public class TreeScript : MonoBehaviour {
 		bstVisual.ClearItems();
 		bstVisual.Key = key;
 		GameObject go = Search(root, key);
-		if (go != null)
-			Debug.Log("KEY FOUND!");
-		else
-			Debug.Log("KEY NOT FOUND!");
 		StartVisualization();
 	}
 
@@ -160,12 +156,9 @@ public class TreeScript : MonoBehaviour {
 				GameObject temp = node.GetComponent<NodeScript>().RightNode;
                 BSTVisualItem item = new BSTVisualItem(node, (int)VisualType.DestroyNode, enteredKey: key, parentNode: node.GetComponent<NodeScript>().ParentNode);
                 bstVisual.Items.Add(item);
-                //bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.DestroyNode));
                 if (temp != null)
                 {
-                    //item.ParentNode = node.GetComponent<NodeScript>().ParentNode;
                     item.TempNode = temp;
-                    //bstVisual.Items.Add(new BSTVisualItem(temp, (int)VisualType.RefreshNode, parentNode: node.GetComponent<NodeScript>().ParentNode));
                 }
 
                 return temp;
@@ -173,14 +166,11 @@ public class TreeScript : MonoBehaviour {
 			else if (node.GetComponent<NodeScript>().RightNode == null)
 			{
 				GameObject temp = node.GetComponent<NodeScript>().LeftNode;
-                //bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.DestroyNode));
                 BSTVisualItem item = new BSTVisualItem(node, (int)VisualType.DestroyNode, enteredKey: key, parentNode: node.GetComponent<NodeScript>().ParentNode);
                 bstVisual.Items.Add(item);
                 if (temp != null)
                 {
-                    //item.ParentNode = node.GetComponent<NodeScript>().ParentNode;
                     item.TempNode = temp;
-                    //bstVisual.Items.Add(new BSTVisualItem(temp, (int)VisualType.RefreshNode, parentNode: node.GetComponent<NodeScript>().ParentNode));
                 }
 
                 return temp;
@@ -200,8 +190,6 @@ public class TreeScript : MonoBehaviour {
 
                 bstVisual.Items.Add(new BSTVisualItem(inorderSuccessor, (int)VisualType.InorderSuccessorMove, inorderPosition: inorderSuccessor.transform.localPosition,
                     dest: dest, enteredKey: key, parentNode: inorderSuccessor.GetComponent<NodeScript>().ParentNode, inorderKey: inorderSuccessorKey));
-                //bstVisual.Items.Add(new BSTVisualItem(inorderSuccessor, (int)VisualType.InorderSuccessorDestroy, tempNode: node, inorderPosition: dest, enteredKey: inorderSuccessorKey));
-
 
                 bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.SetNodeKey, enteredKey: key, inorderKey: inorderSuccessorKey));
                 bstVisual.Items.Add(new BSTVisualItem(node, (int)VisualType.RightArrow));

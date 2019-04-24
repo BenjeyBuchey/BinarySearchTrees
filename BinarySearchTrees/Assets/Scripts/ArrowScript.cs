@@ -57,7 +57,6 @@ public class ArrowScript : MonoBehaviour {
 		}
 
 		LineRenderer lr = GetComponent<LineRenderer>();
-		//lr.useWorldSpace = true;
 		lr.positionCount = 2;
 		lr.SetPosition(0, fromNode.position);
 		lr.SetPosition(1, toNode.position);
