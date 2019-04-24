@@ -88,7 +88,6 @@ public class VisualScript : MonoBehaviour {
 
 			if (_visualizationCounter > 0)
 				HandleColors(_bstVisual.Items[_visualizationCounter - 1], true);
-				//HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
 
 			if (_visualizationCounter >= _bstVisual.Items.Count)
 			{
@@ -101,12 +100,9 @@ public class VisualScript : MonoBehaviour {
 			HandleVisualizationItem(_bstVisual.Items[_visualizationCounter], false);
 
 			yield return new WaitForSeconds(waitTime);
-
-			//HandleVisualizationItem(item, true);
 		}
 		if (_visualizationCounter <= _bstVisual.Items.Count)
 			HandleColors(_bstVisual.Items[_visualizationCounter - 1], true);
-			//HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
 	
 		Reset();
 	}
@@ -138,8 +134,8 @@ public class VisualScript : MonoBehaviour {
 		_isBusy = true;
         _visualizationCounter--;
         Debug.Log("VISUAL COUNTER: " + _visualizationCounter + " - ITEM COUNT: " + _bstVisual.Items.Count);
-		if ((_visualizationCounter+1) < _bstVisual.Items.Count)	//if (_visualizationCounter < _bstVisual.Items.Count)
-			HandleColors(_bstVisual.Items[_visualizationCounter+1], true);	//HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter], true);
+		if ((_visualizationCounter+1) < _bstVisual.Items.Count)
+			HandleColors(_bstVisual.Items[_visualizationCounter+1], true);
 
 		UpdateVisualizationSpeed();
 		RemoveLastLogEntry();
@@ -154,7 +150,6 @@ public class VisualScript : MonoBehaviour {
         }
 
         yield return new WaitForSeconds(waitTime);
-        //_visualizationCounter--;
         _isBusy = false;
 	}
 
@@ -162,16 +157,18 @@ public class VisualScript : MonoBehaviour {
     {
         _isBusy = true;
         waitTime = 0.1f;
+        _visualizationCounter--;
+        Debug.Log("STEP BEGIN VISUAL COUNTER: " + _visualizationCounter);
 
-        for (; _visualizationCounter >= 0; --_visualizationCounter)
+        for (; _visualizationCounter >= 0; _visualizationCounter--) // --_visualizationCounter
         {
-            if (_visualizationCounter < _bstVisual.Items.Count)
-				HandleColors(_bstVisual.Items[_visualizationCounter], true);	//HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter], true);
+            if ((_visualizationCounter + 1) < _bstVisual.Items.Count)
+				HandleColors(_bstVisual.Items[_visualizationCounter+1], true);
 
 			RemoveLastLogEntry();
             if (_visualizationCounter > 0)
             {
-                HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter - 1], false);
+                HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter], false);
             }
             else
             {
@@ -180,8 +177,7 @@ public class VisualScript : MonoBehaviour {
             }
             yield return new WaitForSeconds(waitTime);
         }
-
-            _isBusy = true;
+        _isBusy = true;
     }
 
 	IEnumerator DoStepEnd()
@@ -215,7 +211,12 @@ public class VisualScript : MonoBehaviour {
 
 	private void AddLogEntry(string msg)
 	{
-		if (logs.GetComponent<Text>().text != String.Empty)
+        int logNumber = GetLogNumber();
+        Debug.Log("VISUAL COUNTER: " + _visualizationCounter + " - NUMBER OF LOG MSGS: " + logNumber);
+        // don't remove log msg on same step
+        if (_visualizationCounter == logNumber-1) return;
+
+        if (logs.GetComponent<Text>().text != String.Empty)
 			logs.GetComponent<Text>().text += System.Environment.NewLine;
 
 		logs.GetComponent<Text>().text += msg;
@@ -226,7 +227,12 @@ public class VisualScript : MonoBehaviour {
 
 	private void RemoveLastLogEntry()
 	{
-		string text = logs.GetComponent<Text>().text;
+        int logNumber = GetLogNumber();
+        Debug.Log("VISUAL COUNTER: " + _visualizationCounter + " - NUMBER OF LOG MSGS: " + logNumber);
+        // don't remove log msg on same step
+        if (_visualizationCounter == logNumber-1) return;
+
+        string text = logs.GetComponent<Text>().text;
         int index = text.LastIndexOf(System.Environment.NewLine);
 
         if (index < 0)
@@ -237,6 +243,13 @@ public class VisualScript : MonoBehaviour {
         Canvas.ForceUpdateCanvases();
         scrollView.GetComponent<ScrollRect>().verticalNormalizedPosition = 0f;
 	}
+
+    private int GetLogNumber()
+    {
+        if (logs.GetComponent<Text>().text == String.Empty) return 0;
+
+        return logs.GetComponent<Text>().text.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Length;
+    }
 
 	private void UpdateVisualizationSpeed()
 	{
@@ -267,16 +280,16 @@ public class VisualScript : MonoBehaviour {
 			case (int)VisualType.Node:
             case (int)VisualType.InorderSuccessor:
             //case (int)VisualType.InorderSuccessorFound:
-                HandleNode(item, isDefaultColor);
+                HandleNode(item, false);
 				break;
 			case (int)VisualType.InorderSuccessorFound:
 				HandleInorderSuccessorFound(item);
 				break;
 			case (int)VisualType.LeftArrow:
-				HandleArrow(item, isDefaultColor, true);
+				HandleArrow(item, false, true);
 				break;
 			case (int)VisualType.RightArrow:
-				HandleArrow(item, isDefaultColor, false);
+				HandleArrow(item, false, false);
 				break;
 			case (int)VisualType.SpawnNode:
 				HandleSpawnNode(isDefaultColor, item.IsLeftNode, item.EnteredKey, item.ParentNode);
@@ -305,16 +318,16 @@ public class VisualScript : MonoBehaviour {
 			case (int)VisualType.Node:
             case (int)VisualType.InorderSuccessor:
             //case (int)VisualType.InorderSuccessorFound:
-                HandleNode(item, isDefaultColor);
+                HandleNode(item, false);
 				break;
 			case (int)VisualType.InorderSuccessorFound:
 				HandleInorderSuccessorFoundBackwards(item);
 				break;
 			case (int)VisualType.LeftArrow:
-				HandleArrow(item, isDefaultColor, true);
+				HandleArrow(item, false, true);
 				break;
 			case (int)VisualType.RightArrow:
-				HandleArrow(item, isDefaultColor, false);
+				HandleArrow(item, false, false);
 				break;
 			case (int)VisualType.SpawnNode:
 				HandleSpawnNodeBackwards(isDefaultColor, item.IsLeftNode, item.EnteredKey, item.ParentNode);
@@ -345,7 +358,8 @@ public class VisualScript : MonoBehaviour {
 
 	private void HandleInorderSuccessorFoundBackwards(BSTVisualItem item)
 	{
-		DeleteTempInorderSuccessorNode();
+        HandleColors(item, false);
+        DeleteTempInorderSuccessorNode();
 	}
 
 	private void HandleSpawnNodeBackwards(bool isSpawned, bool isLeftNode, int key, GameObject parentNode)
@@ -459,7 +473,7 @@ public class VisualScript : MonoBehaviour {
 		if (item.Node == null) return;
 		//item.Node.GetComponent<NodeScript>().SetNodeColor(isDefaultColor);
 
-		HandleColors(item, false);
+		HandleColors(item, isDefaultColor);
 	}
 
 	void HandleArrow(BSTVisualItem item, bool isDefaultColor, bool isLeftArrow)
@@ -467,7 +481,7 @@ public class VisualScript : MonoBehaviour {
 		if (item.Node == null) return;
 		//item.Node.GetComponent<NodeScript>().SetArrowColor(isDefaultColor, isLeftArrow);
 
-		HandleColors(item, false);
+		HandleColors(item, isDefaultColor);
 	}
 
 	void HandleSpawnNode(bool isSpawned, bool isLeftNode, int key, GameObject parentNode)
@@ -575,6 +589,8 @@ public class VisualScript : MonoBehaviour {
 	
 	private void HandleColors(BSTVisualItem item, bool isDefaultColor)
 	{
+        if (item.Node == null)
+            Debug.Log("NODE NULL");
 		switch (item.Type)
 		{
 			case (int)VisualType.Node:

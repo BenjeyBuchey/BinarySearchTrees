@@ -42,7 +42,10 @@ public class TreeScript : MonoBehaviour {
 		AddNode(35);
 		AddNode(36);
 		AddNode(34);
-		Inorder(root);
+        AddNode(65);
+        AddNode(63);
+        AddNode(68);
+        Inorder(root);
 		isInitializing = false;
 	}
 	

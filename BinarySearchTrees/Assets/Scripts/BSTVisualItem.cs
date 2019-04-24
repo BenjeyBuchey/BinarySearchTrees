@@ -206,6 +206,6 @@ public class BSTVisualItem {
 	private string SetNodeKeyMsg()
 	{
 		if (_node == null) return string.Empty;
-		return cmd + "Set Node " + +_node.GetComponent<NodeScript>().Key + " to "+ _enteredKey + "!";
+		return cmd + "Set Node " + +_node.GetComponent<NodeScript>().Key + " to "+ _inorderKey + "!";
 	}
 }
