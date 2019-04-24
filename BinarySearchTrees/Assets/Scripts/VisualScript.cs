@@ -133,7 +133,6 @@ public class VisualScript : MonoBehaviour {
 	{
 		_isBusy = true;
         _visualizationCounter--;
-        Debug.Log("VISUAL COUNTER: " + _visualizationCounter + " - ITEM COUNT: " + _bstVisual.Items.Count);
 		if ((_visualizationCounter+1) < _bstVisual.Items.Count)
 			HandleColors(_bstVisual.Items[_visualizationCounter+1], true);
 
@@ -141,7 +140,7 @@ public class VisualScript : MonoBehaviour {
 		RemoveLastLogEntry();
         if (_visualizationCounter > 0)
         {
-            HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter], false); // -1
+            HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter], false);
         }
         else
         {
