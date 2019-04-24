@@ -303,11 +303,11 @@ public class NodeScript : MonoBehaviour {
 	// gets called when one node gets deleted and new parent&children need to be set
 	public void RefreshNode(GameObject newParentNode)
 	{
-		Debug.Log("KEY: " +key + " - CURRENT LEVEL: " + level);
+		//Debug.Log("KEY: " +key + " - CURRENT LEVEL: " + level);
 
 		parentNode = newParentNode;
 		RefreshLevels();
-		Debug.Log("KEY: " + key + " - NEW LEVEL: " + level);
+		//Debug.Log("KEY: " + key + " - NEW LEVEL: " + level);
 		if (parentNode == null) return;
 
 		// becomes right node

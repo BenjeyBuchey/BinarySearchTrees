@@ -87,7 +87,8 @@ public class VisualScript : MonoBehaviour {
 				yield return null;
 
 			if (_visualizationCounter > 0)
-				HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
+				HandleColors(_bstVisual.Items[_visualizationCounter - 1], true);
+				//HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
 
 			if (_visualizationCounter >= _bstVisual.Items.Count)
 			{
@@ -104,8 +105,9 @@ public class VisualScript : MonoBehaviour {
 			//HandleVisualizationItem(item, true);
 		}
 		if (_visualizationCounter <= _bstVisual.Items.Count)
-			HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
-
+			HandleColors(_bstVisual.Items[_visualizationCounter - 1], true);
+			//HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
+	
 		Reset();
 	}
 
@@ -115,9 +117,9 @@ public class VisualScript : MonoBehaviour {
 		UpdateVisualizationSpeed();
 
 		if (_visualizationCounter > 0)
-			HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
+			HandleColors(_bstVisual.Items[_visualizationCounter - 1], true);
 
-        if (_visualizationCounter >= _bstVisual.Items.Count)
+		if (_visualizationCounter >= _bstVisual.Items.Count)
         {
             _isBusy = false;
             yield break;
@@ -134,16 +136,16 @@ public class VisualScript : MonoBehaviour {
 	IEnumerator DoStepBackwards()
 	{
 		_isBusy = true;
-        _visualizationCounter--; // now we are at last processed item
+        _visualizationCounter--;
         Debug.Log("VISUAL COUNTER: " + _visualizationCounter + " - ITEM COUNT: " + _bstVisual.Items.Count);
-        if (_visualizationCounter < _bstVisual.Items.Count)
-			HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter], true); // execute item here
+		if ((_visualizationCounter+1) < _bstVisual.Items.Count)	//if (_visualizationCounter < _bstVisual.Items.Count)
+			HandleColors(_bstVisual.Items[_visualizationCounter+1], true);	//HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter], true);
 
 		UpdateVisualizationSpeed();
 		RemoveLastLogEntry();
         if (_visualizationCounter > 0)
         {
-            HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter - 1], false); // only set color here
+            HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter], false); // -1
         }
         else
         {
@@ -164,9 +166,9 @@ public class VisualScript : MonoBehaviour {
         for (; _visualizationCounter >= 0; --_visualizationCounter)
         {
             if (_visualizationCounter < _bstVisual.Items.Count)
-                HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter], true);
+				HandleColors(_bstVisual.Items[_visualizationCounter], true);	//HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter], true);
 
-            RemoveLastLogEntry();
+			RemoveLastLogEntry();
             if (_visualizationCounter > 0)
             {
                 HandleVisualizationItemBackwards(_bstVisual.Items[_visualizationCounter - 1], false);
@@ -190,7 +192,7 @@ public class VisualScript : MonoBehaviour {
 		for (; _visualizationCounter < _bstVisual.Items.Count; _visualizationCounter++)
 		{
 			if (_visualizationCounter > 0)
-				HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
+				HandleColors(_bstVisual.Items[_visualizationCounter-1], true);//HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
 
 			if (_visualizationCounter >= _bstVisual.Items.Count)
 			{
@@ -205,7 +207,7 @@ public class VisualScript : MonoBehaviour {
 		}
 
 		if (_visualizationCounter <= _bstVisual.Items.Count)
-			HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
+			HandleColors(_bstVisual.Items[_visualizationCounter-1], true);	//HandleVisualizationItem(_bstVisual.Items[_visualizationCounter - 1], true);
 
 		Reset();
 		_isBusy = false;
@@ -258,29 +260,29 @@ public class VisualScript : MonoBehaviour {
 
 	void HandleVisualizationItem(BSTVisualItem item, bool isDefaultColor)
 	{
-		GameObject node = item.Node;
+		Debug.Log("DOING FORWARD STEP TYPE " + item.Type);
 
 		switch(item.Type)
 		{
 			case (int)VisualType.Node:
             case (int)VisualType.InorderSuccessor:
-            case (int)VisualType.InorderSuccessorFound:
-                HandleNode(node, isDefaultColor);
+            //case (int)VisualType.InorderSuccessorFound:
+                HandleNode(item, isDefaultColor);
+				break;
+			case (int)VisualType.InorderSuccessorFound:
+				HandleInorderSuccessorFound(item);
 				break;
 			case (int)VisualType.LeftArrow:
-				HandleArrow(node, isDefaultColor, true);
+				HandleArrow(item, isDefaultColor, true);
 				break;
 			case (int)VisualType.RightArrow:
-				HandleArrow(node, isDefaultColor, false);
+				HandleArrow(item, isDefaultColor, false);
 				break;
 			case (int)VisualType.SpawnNode:
 				HandleSpawnNode(isDefaultColor, item.IsLeftNode, item.EnteredKey, item.ParentNode);
 				break;
 			case (int)VisualType.DestroyNode:
 				HandleDestroyNode(item, isDefaultColor);
-				break;
-			case (int)VisualType.RefreshNode:
-				HandleRefreshNode(node, isDefaultColor, item.ParentNode);
 				break;
 			case (int)VisualType.SetNodeKey:
 				HandleSetNodeKey(item, isDefaultColor);
@@ -294,22 +296,25 @@ public class VisualScript : MonoBehaviour {
         }
 	}
 
-    void HandleVisualizationItemBackwards(BSTVisualItem item, bool isDefaultColor)
+	void HandleVisualizationItemBackwards(BSTVisualItem item, bool isDefaultColor)
 	{
-		GameObject node = item.Node;
+		Debug.Log("DOING BACKWARDS STEP TYPE " + item.Type);
 
 		switch (item.Type)
 		{
 			case (int)VisualType.Node:
             case (int)VisualType.InorderSuccessor:
-            case (int)VisualType.InorderSuccessorFound:
-                HandleNode(node, isDefaultColor);
+            //case (int)VisualType.InorderSuccessorFound:
+                HandleNode(item, isDefaultColor);
+				break;
+			case (int)VisualType.InorderSuccessorFound:
+				HandleInorderSuccessorFoundBackwards(item);
 				break;
 			case (int)VisualType.LeftArrow:
-				HandleArrow(node, isDefaultColor, true);
+				HandleArrow(item, isDefaultColor, true);
 				break;
 			case (int)VisualType.RightArrow:
-				HandleArrow(node, isDefaultColor, false);
+				HandleArrow(item, isDefaultColor, false);
 				break;
 			case (int)VisualType.SpawnNode:
 				HandleSpawnNodeBackwards(isDefaultColor, item.IsLeftNode, item.EnteredKey, item.ParentNode);
@@ -332,7 +337,18 @@ public class VisualScript : MonoBehaviour {
         }
 	}
 
-    private void HandleSpawnNodeBackwards(bool isSpawned, bool isLeftNode, int key, GameObject parentNode)
+	private void HandleInorderSuccessorFound(BSTVisualItem item)
+	{
+		HandleColors(item, false);
+		DeleteTempInorderSuccessorNode();
+	}
+
+	private void HandleInorderSuccessorFoundBackwards(BSTVisualItem item)
+	{
+		DeleteTempInorderSuccessorNode();
+	}
+
+	private void HandleSpawnNodeBackwards(bool isSpawned, bool isLeftNode, int key, GameObject parentNode)
     {
         //if (isSpawned) return;
 
@@ -346,54 +362,60 @@ public class VisualScript : MonoBehaviour {
     // remove references and move inorderSuccessor to original node position
     private void HandleInorderSuccessorMove(BSTVisualItem item, bool isDefaultColor)
     {
-        if (item.Node == null) return;
+		DeleteTempInorderSuccessorNode();
+		if (item.Node == null) return;
 
         GameObject tempNode;
         // spawn new Node with inorderSucc key+pos. move node to original node & destroy it.
-        if (!isDefaultColor)
-        {
+        //if (!isDefaultColor)
+        //{
             tempNode = gameObject.GetComponent<TreeScript>().SpawnNode();
             tempNode.name = TEMP_INORDER_SUCCESSOR_NODE;
             tempNode.GetComponent<NodeScript>().SetKey(item.Node.GetComponent<NodeScript>().Key);
-            tempNode.GetComponent<NodeScript>().SetNodeColor(isDefaultColor);
+            tempNode.GetComponent<NodeScript>().SetNodeColor(false);
             tempNode.transform.position = item.Node.transform.position;
 
             LeanTween.moveLocal(tempNode, item.Dest, waitTime);
-        }
-        else
-        {
-            tempNode = GameObject.Find(TEMP_INORDER_SUCCESSOR_NODE);
-            if (tempNode != null)
-                Destroy(tempNode);
-        }
+        //}
+        //else
+        //{
+        //    tempNode = GameObject.Find(TEMP_INORDER_SUCCESSOR_NODE);
+        //    if (tempNode != null)
+        //        Destroy(tempNode);
+        //}
     }
 
     private void HandleInorderSuccessorMoveBackwards(BSTVisualItem item, bool isDefaultColor)
     {
+		DeleteTempInorderSuccessorNode();
         // find gameobject with inorderSucc key
         if (item.Node == null)
             item.Node = GetNodeByKey(item.InorderKey);
 
-        // TODO: some reference is missing in one step (testcase: add 65,63,68)
+		// also need to set previous BSTVisualItem node (type Node)
+		if ((_visualizationCounter - 1) >= 0)
+			_bstVisual.Items[_visualizationCounter - 1].Node = item.Node;
 
-        GameObject tempNode;
+		GameObject tempNode;
         // spawn new Node with inorderSucc key+dest. move node to inorderSucc & destroy it.
-        if (!isDefaultColor)
-        {
+        //if (!isDefaultColor)
+        //{
             tempNode = gameObject.GetComponent<TreeScript>().SpawnNode();
             tempNode.name = TEMP_INORDER_SUCCESSOR_NODE;
             tempNode.GetComponent<NodeScript>().SetKey(item.Node.GetComponent<NodeScript>().Key);
-            tempNode.GetComponent<NodeScript>().SetNodeColor(isDefaultColor);
-            tempNode.transform.position = item.Dest;
+            tempNode.GetComponent<NodeScript>().SetNodeColor(false);
+            tempNode.transform.localPosition = item.Dest;
+			Debug.Log("TEMPNODE SPAWN: " + tempNode.transform.position);
+			Debug.Log("TEMPNODE DEST: " + item.Node.transform.position);
 
-            LeanTween.moveLocal(tempNode, item.Node.transform.position, waitTime);
-        }
-        else
-        {
-            tempNode = GameObject.Find(TEMP_INORDER_SUCCESSOR_NODE);
-            if (tempNode != null)
-                Destroy(tempNode);
-        }
+			LeanTween.moveLocal(tempNode, item.Node.transform.localPosition, waitTime);
+        //}
+        //else
+        //{
+        //    tempNode = GameObject.Find(TEMP_INORDER_SUCCESSOR_NODE);
+        //    if (tempNode != null)
+        //        Destroy(tempNode);
+        //}
     }
 
     //delete inorderSuccessor. set original node key to inorderSuccessor key
@@ -432,27 +454,31 @@ public class VisualScript : MonoBehaviour {
         //    _bstVisual.Items[prevIndex].Node = inorderSuccessor;
     }
 
-    void HandleNode(GameObject node, bool isDefaultColor)
+    void HandleNode(BSTVisualItem item, bool isDefaultColor)
 	{
-		if (node == null) return;
-		node.GetComponent<NodeScript>().SetNodeColor(isDefaultColor);
+		if (item.Node == null) return;
+		//item.Node.GetComponent<NodeScript>().SetNodeColor(isDefaultColor);
+
+		HandleColors(item, false);
 	}
 
-	void HandleArrow(GameObject node, bool isDefaultColor, bool isLeftArrow)
+	void HandleArrow(BSTVisualItem item, bool isDefaultColor, bool isLeftArrow)
 	{
-		if (node == null) return;
-		node.GetComponent<NodeScript>().SetArrowColor(isDefaultColor, isLeftArrow);
+		if (item.Node == null) return;
+		//item.Node.GetComponent<NodeScript>().SetArrowColor(isDefaultColor, isLeftArrow);
+
+		HandleColors(item, false);
 	}
 
 	void HandleSpawnNode(bool isSpawned, bool isLeftNode, int key, GameObject parentNode)
 	{
-		if (isSpawned) return;
+		//if (isSpawned) return;
 		gameObject.GetComponent<TreeScript>().SpawnNode(isLeftNode, key, parentNode);
 	}
 
 	void HandleDestroyNode(BSTVisualItem item, bool isDeleted)
 	{
-		if (isDeleted) return;
+		//if (isDeleted) return;
 		if(item.Node.GetComponent<NodeScript>().ParentNode != null)
 			item.Node.GetComponent<NodeScript>().ParentNode.GetComponent<NodeScript>().IsLocked = false;
 		Destroy(item.Node);
@@ -467,7 +493,7 @@ public class VisualScript : MonoBehaviour {
 
     void HandleDestroyNodeBackwards(BSTVisualItem item, bool isDeleted)
     {
-        if (!isDeleted) return;
+        //if (!isDeleted) return;
         if (item.ParentNode != null)
             item.ParentNode.GetComponent<NodeScript>().IsLocked = false;
 
@@ -520,7 +546,11 @@ public class VisualScript : MonoBehaviour {
 	{
 		if (item.Node == null) return;
 
-        item.Node.GetComponent<NodeScript>().SetNodeColor(isSet);
+		GameObject tempNode = GameObject.Find(TEMP_INORDER_SUCCESSOR_NODE);
+		if (tempNode != null)
+			Destroy(tempNode);
+
+		item.Node.GetComponent<NodeScript>().SetNodeColor(isSet);
         item.Node.GetComponent<NodeScript>().SetKey(item.InorderKey);
 	}
 
@@ -542,4 +572,39 @@ public class VisualScript : MonoBehaviour {
         }
         return null;
     }
+	
+	private void HandleColors(BSTVisualItem item, bool isDefaultColor)
+	{
+		switch (item.Type)
+		{
+			case (int)VisualType.Node:
+			case (int)VisualType.InorderSuccessor:
+			case (int)VisualType.InorderSuccessorFound:
+			case (int)VisualType.SetNodeKey:
+				if(item.Node != null)
+					item.Node.GetComponent<NodeScript>().SetNodeColor(isDefaultColor);
+				break;
+			case (int)VisualType.LeftArrow:
+				if (item.Node != null)
+					item.Node.GetComponent<NodeScript>().SetArrowColor(isDefaultColor, true);
+				break;
+			case (int)VisualType.RightArrow:
+				if (item.Node != null)
+					item.Node.GetComponent<NodeScript>().SetArrowColor(isDefaultColor, false);
+				break;
+			case (int)VisualType.SpawnNode:
+				break;
+			case (int)VisualType.DestroyNode:
+				break;
+			case (int)VisualType.InorderSuccessorMove:
+				break;
+		}
+	}
+
+	private void DeleteTempInorderSuccessorNode()
+	{
+		GameObject tempNode = GameObject.Find(TEMP_INORDER_SUCCESSOR_NODE);
+		if (tempNode != null)
+			Destroy(tempNode);
+	}
 }
