@@ -115,8 +115,8 @@ public class BSTVisualItem {
 				return FoundNodeMsg();
 			case (int)VisualType.DestroyNode:
 				return DestroyNodeMsg();
-			case (int)VisualType.RefreshNode:
-				return RefreshNodeMsg();
+			//case (int)VisualType.RefreshNode:
+			//	return RefreshNodeMsg();
 			case (int)VisualType.SetNodeKey:
 				return SetNodeKeyMsg();
             case (int)VisualType.InorderSuccessor:
@@ -193,15 +193,15 @@ public class BSTVisualItem {
 			return cmd + "Node " + _node.GetComponent<NodeScript>().Key + " found!";
 	}
 
-	private string RefreshNodeMsg()
-	{
-		if (_node == null) return string.Empty;
+	//private string RefreshNodeMsg()
+	//{
+	//	if (_node == null) return string.Empty;
 
-		if (_parentNode == null)
-			return cmd + "Set Node " + _node.GetComponent<NodeScript>().Key + " to Root Node!";
-		else
-			return cmd + "Set Node " + _node.GetComponent<NodeScript>().Key + " Parent to " +_parentNode.GetComponent<NodeScript>().Key;
-	}
+	//	if (_parentNode == null)
+	//		return cmd + "Set Node " + _node.GetComponent<NodeScript>().Key + " to Root Node!";
+	//	else
+	//		return cmd + "Set Node " + _node.GetComponent<NodeScript>().Key + " Parent to " +_parentNode.GetComponent<NodeScript>().Key;
+	//}
 
 	private string SetNodeKeyMsg()
 	{
